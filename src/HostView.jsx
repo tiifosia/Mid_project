@@ -104,8 +104,12 @@ export default function HostView() {
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-background">
       <div
-        className={`relative h-full w-full transition-[filter] ease-out ${selected ? 'pointer-events-none blur-xl' : ''}`}
-        style={{ transitionDuration: `${FLY_SECONDS}s` }}
+        className={`relative h-full w-full transition-[filter] ${selected ? 'pointer-events-none blur-xl' : ''}`}
+        style={{
+          transitionDuration: `${FLY_SECONDS}s`,
+          // 줌인: 출발과 함께 빠르게 흐려짐 / 줌아웃: 날아가는 동안 흐림을 유지하다 도착하며 선명해짐
+          transitionTimingFunction: selected ? 'cubic-bezier(0.16, 1, 0.3, 1)' : 'cubic-bezier(0.7, 0, 0.84, 0)',
+        }}
       >
         <div ref={mapEl} className="h-full w-full bg-background" />
         {/* 가장자리를 배경색으로 가라앉히는 비네트 (지도 면 위, 마커 아래) */}
