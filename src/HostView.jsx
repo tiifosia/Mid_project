@@ -159,24 +159,29 @@ export default function HostView() {
           />
         </div>
 
-        {/* 상단: 리셋 · 번호로 지점 이동 */}
+        {/* 상단 조작부: 하나의 캡슐 안에 RESET | NO. 입력 */}
         <div
-          className={`absolute left-1/2 top-6 z-[1000] flex -translate-x-1/2 items-center gap-3 transition-opacity duration-500 ${selected || !revealed || revealing ? 'pointer-events-none opacity-0' : ''}`}
+          className={`hud absolute left-1/2 top-6 z-[1000] flex h-10 -translate-x-1/2 items-center rounded-full text-[11px] tracking-[0.28em] transition-opacity duration-500 ${selected || !revealed || revealing ? 'pointer-events-none opacity-0' : ''}`}
         >
           <button
             type="button"
             onClick={resetAll}
-            className="glass rounded-full px-5 py-2 text-xs tracking-[0.3em] text-text-secondary transition-colors hover:text-accent"
+            className="h-full rounded-l-full pl-6 pr-5 text-text-secondary outline-none transition-colors hover:text-text-primary focus-visible:text-accent"
           >
             RESET
           </button>
-          <form onSubmit={submitNumber} className="glass flex items-center gap-3 rounded-full px-5 py-2">
-            <span className="text-xs tracking-[0.3em] text-text-secondary">NO.</span>
+          <span className="h-4 w-px bg-text-primary/10" />
+          <form onSubmit={submitNumber} className="flex h-full items-center gap-3 pl-5 pr-6">
+            <label htmlFor="video-no" className="text-text-secondary">
+              NO.
+            </label>
             <input
+              id="video-no"
               value={number}
               onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))}
               inputMode="numeric"
-              className="w-14 bg-transparent text-center text-text-primary outline-none"
+              autoComplete="off"
+              className="w-10 bg-transparent text-center text-[13px] tracking-[0.1em] text-text-primary caret-accent outline-none"
             />
           </form>
         </div>

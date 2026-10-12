@@ -8,11 +8,20 @@ body { @apply bg-background text-text-primary; }
 .glass {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04));
   backdrop-filter: blur(24px) saturate(140%);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(255, 255, 255, 0.05),
     0 8px 32px rgba(0, 0, 0, 0.4);
 }
+
+/* 지도 위 조작부 — 뒤의 지도가 은은하게만 비치도록 어둡고 깊게 흐린 유리 */
+.hud {
+  background: rgba(20, 20, 20, 0.62);
+  backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+/* 오프닝(포트폴리오) CSS 의 전역 :focus-visible 테두리를 조작부에서는 끈다 — 포커스는 글자색 · 커서색으로 드러낸다 */
+.hud :focus-visible { outline: none; }
 
 /* 게스트 터치 파문 */
 .ripple {
