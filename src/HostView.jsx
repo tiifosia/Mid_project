@@ -60,12 +60,14 @@ export default function HostView() {
       zoomControl: false,
       attributionControl: false,
       zoomSnap: 0.25,
-      maxBounds: [[-80, -190], [85, 200]],
       maxBoundsViscosity: 1,
     })
     mapRef.current = map
     map.fitBounds(WORLD, FIT)
     map.setMinZoom(map.getZoom())
+    // 이동 허용 범위 = 세계 전체가 보이는 이 화면 그대로. 범위가 화면보다 좁거나 중심이 어긋나 있으면
+    // 줌아웃이 끝난 뒤 Leaflet 이 지도를 범위 안으로 끌어다 놓아 옆으로 밀렸다(경도 6°, 약 24px).
+    map.setMaxBounds(map.getBounds())
     map.setZoom(map.getZoom() + 1.5, { animate: false }) // 오프닝 동안은 가까이 당겨 둔다
 
     // 외부 타일 대신 Natural Earth 국가 경계를 직접 그린다: API 키 불필요, 오프라인 동작
