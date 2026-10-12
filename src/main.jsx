@@ -5,6 +5,6 @@ import './index.css'
 import HostView from './HostView.jsx'
 import GuestView from './GuestView.jsx'
 
-const isGuest = window.location.pathname.startsWith('/vote')
+const isGuest = window.location.pathname.startsWith(`${import.meta.env.BASE_URL}vote`)
 
 createRoot(document.getElementById('root')).render(isGuest ? <GuestView /> : <HostView />)

@@ -33,7 +33,7 @@ export default function HostView() {
       {/* 모달을 열기 전에 영상을 미리 받아 두어 즉시 재생되게 한다 */}
       <div hidden>
         {VIDEOS.map(({ id }) => (
-          <video key={id} src={`/videos/${id}.mp4`} preload="auto" muted />
+          <video key={id} src={`${import.meta.env.BASE_URL}videos/${id}.mp4`} preload="auto" muted />
         ))}
       </div>
       {selected && <VideoModal id={selected} onClose={() => setSelected(null)} />}
