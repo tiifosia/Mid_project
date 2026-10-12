@@ -55,6 +55,18 @@ export default function HostView() {
     setRows((rs) => ({ ...rs, [id]: { ...rs[id], verdict: choice, status: 'closed' } }))
   }
 
+  // 전체 리셋: 투표 수 · 마감 · 판정을 처음으로 (정답 is_ai 는 그대로)
+  const resetAll = async () => {
+    if (!confirm('모든 투표 결과와 판정을 초기화할까요?')) return
+    const { error } = await supabase.rpc('reset_votes')
+    if (error) return alert(`초기화에 실패했습니다.\n(${error.message})`)
+    setRows((rs) =>
+      Object.fromEntries(
+        Object.entries(rs).map(([id, r]) => [id, { ...r, real_votes: 0, ai_votes: 0, status: 'voting', verdict: null }]),
+      ),
+    )
+  }
+
   useEffect(() => {
     const map = L.map(mapEl.current, {
       zoomControl: false,
@@ -147,19 +159,27 @@ export default function HostView() {
           />
         </div>
 
-        {/* 번호로 지점 이동 */}
-        <form
-          onSubmit={submitNumber}
-          className={`glass absolute left-1/2 top-6 z-[1000] flex -translate-x-1/2 items-center gap-3 rounded-full px-5 py-2 transition-opacity duration-500 ${selected || !revealed || revealing ? 'pointer-events-none opacity-0' : ''}`}
+        {/* 상단: 리셋 · 번호로 지점 이동 */}
+        <div
+          className={`absolute left-1/2 top-6 z-[1000] flex -translate-x-1/2 items-center gap-3 transition-opacity duration-500 ${selected || !revealed || revealing ? 'pointer-events-none opacity-0' : ''}`}
         >
-          <span className="text-xs tracking-[0.3em] text-text-secondary">NO.</span>
-          <input
-            value={number}
-            onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))}
-            inputMode="numeric"
-            className="w-14 bg-transparent text-center text-text-primary outline-none"
-          />
-        </form>
+          <button
+            type="button"
+            onClick={resetAll}
+            className="glass rounded-full px-5 py-2 text-xs tracking-[0.3em] text-text-secondary transition-colors hover:text-accent"
+          >
+            RESET
+          </button>
+          <form onSubmit={submitNumber} className="glass flex items-center gap-3 rounded-full px-5 py-2">
+            <span className="text-xs tracking-[0.3em] text-text-secondary">NO.</span>
+            <input
+              value={number}
+              onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))}
+              inputMode="numeric"
+              className="w-14 bg-transparent text-center text-text-primary outline-none"
+            />
+          </form>
+        </div>
 
         {/* 모달을 열기 전에 영상을 미리 받아 두어 즉시 재생되게 한다 */}
         <div hidden>
