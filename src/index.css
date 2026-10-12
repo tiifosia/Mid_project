@@ -72,6 +72,4 @@ body { @apply bg-background text-text-primary; }
   50% { opacity: 0.35; transform: scale(0.75); }
 }
 
-.leaflet-container { background: #333333; }
-.leaflet-control-attribution { background: transparent !important; color: #8d8d8d !important; }
-.leaflet-control-attribution a { color: #8d8d8d !important; }
+.leaflet-container { background: #111111; }
