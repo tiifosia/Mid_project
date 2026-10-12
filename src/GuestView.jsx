@@ -54,7 +54,10 @@ export default function GuestView() {
     setSending(true)
     const { error } = await supabase.rpc('vote', { video_id: videoId, choice })
     setSending(false)
-    if (error) return alert('투표에 실패했습니다. 다시 시도해 주세요.')
+    if (error) {
+      console.error(error)
+      return alert(`투표에 실패했습니다. 다시 시도해 주세요.\n(${error.message})`)
+    }
     try {
       localStorage.setItem(storageKey, choice)
     } catch {}

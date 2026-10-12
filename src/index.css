@@ -14,14 +14,6 @@ body { @apply bg-background text-text-primary; }
     0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
-/* 정답 공개 시 패널에 번지는 포인트 컬러 빛 */
-.glass-lit {
-  border-color: rgba(195, 189, 255, 0.55);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 48px rgba(195, 189, 255, 0.45),
-    0 8px 32px rgba(0, 0, 0, 0.4);
-  transition: box-shadow 0.8s, border-color 0.8s;
-}
-
 /* 게스트 터치 파문 */
 .ripple {
   position: absolute;
@@ -36,34 +28,22 @@ body { @apply bg-background text-text-primary; }
   to { transform: scale(1); opacity: 0; }
 }
 
-/* 정답 공개 조명: 화면 전체로 퍼진 뒤 은은하게 남는다 */
-.light-burst {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(circle at 70% 50%, rgba(195, 189, 255, 0.7) 0%, rgba(195, 189, 255, 0.28) 35%, rgba(195, 189, 255, 0) 70%);
-  transform-origin: 70% 50%;
-  animation: light-burst 1.8s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+/* 지도 줌인이 끝난 뒤 영상 모달이 떠오른다 */
+.modal-in { animation: modal-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.96); filter: blur(8px); }
+  to { opacity: 1; transform: scale(1); filter: blur(0); }
 }
-@keyframes light-burst {
-  0% { transform: scale(0.1); opacity: 0; }
-  35% { opacity: 1; }
-  100% { transform: scale(1.6); opacity: 0.55; }
-}
-
-.answer-reveal { animation: answer-reveal 0.9s 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-@keyframes answer-reveal {
-  from { transform: scale(0.7); opacity: 0; filter: blur(8px); }
-  to { transform: scale(1); opacity: 1; filter: blur(0); }
-}
-.glow-text { text-shadow: 0 0 12px rgba(195, 189, 255, 0.9), 0 0 40px rgba(195, 189, 255, 0.6); }
 
 .marker {
+  --c: #8d8d8d; /* 미판정 */
   position: relative;
   width: 40px;
   height: 40px;
   cursor: pointer;
 }
+.marker[data-verdict='real'] { --c: #F5F5F5; }
+.marker[data-verdict='ai'] { --c: #C3BDFF; }
 .marker-core,
 .marker-ring {
   position: absolute;
@@ -75,18 +55,23 @@ body { @apply bg-background text-text-primary; }
   width: 8px;
   height: 8px;
   margin: -4px 0 0 -4px;
-  background: #C3BDFF;
-  box-shadow: 0 0 10px 3px rgba(195, 189, 255, 0.75), 0 0 28px 8px rgba(195, 189, 255, 0.25);
+  background: var(--c);
+  box-shadow: 0 0 10px 3px color-mix(in srgb, var(--c) 75%, transparent),
+    0 0 28px 8px color-mix(in srgb, var(--c) 25%, transparent);
+  transition: background 0.6s, box-shadow 0.6s;
 }
 /* 중심점은 고정, 링이 바깥으로 번져 나간다 */
 .marker-ring {
   width: 8px;
   height: 8px;
   margin: -4px 0 0 -4px;
-  border: 1px solid #C3BDFF;
+  border: 1px solid var(--c);
   animation: marker-ring 2.8s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
 }
 .marker-ring + .marker-ring { animation-delay: 1.4s; }
+/* 판정이 끝난 지점은 파동을 멈춘다 */
+.marker[data-verdict='real'] .marker-ring,
+.marker[data-verdict='ai'] .marker-ring { display: none; }
 @keyframes marker-ring {
   from { transform: scale(1); opacity: 0.9; }
   to { transform: scale(5); opacity: 0; }
@@ -97,8 +82,8 @@ body { @apply bg-background text-text-primary; }
   top: 30px;
   transform: translateX(-50%);
   white-space: nowrap;
-  font-size: 10px;
-  letter-spacing: 0.3em;
+  font-size: 11px;
+  letter-spacing: 0.1em;
   color: #8d8d8d;
   transition: color 0.3s;
 }

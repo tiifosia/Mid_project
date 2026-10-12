@@ -31,9 +31,9 @@ const graticule = () => {
 
 const line = (color, weight, opacity) => ({ interactive: false, style: { color, weight, opacity, fill: false } })
 
-// Natural Earth 50m(퍼블릭 도메인)를 별도 청크로 불러와 육지 면 → 국경선 → 해안선 순으로 그린다
+// Natural Earth 110m(퍼블릭 도메인)를 별도 청크로 불러와 육지 면 → 국경선 → 해안선 순으로 그린다
 export async function addWorldLayers(map) {
-  const { default: topo } = await import('world-atlas/countries-50m.json')
+  const { default: topo } = await import('world-atlas/countries-110m.json')
   const countries = topo.objects.countries
 
   const land = feature(topo, countries).features.filter((f) => !isAntarctica(f))

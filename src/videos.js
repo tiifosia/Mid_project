@@ -1,6 +1,6 @@
-// 더미 영상 3곳 (id는 Supabase videos.id와 일치)
+// 영상 지점 (id는 Supabase videos.id와 일치, 지도 번호는 배열 순서 + 1)
 export const VIDEOS = [
-  { id: 'video_01', label: 'SEOUL', position: [37.5665, 126.978] },
-  { id: 'video_02', label: 'NEW YORK', position: [40.7128, -74.006] },
-  { id: 'video_03', label: 'PARIS', position: [48.8566, 2.3522] },
+  { id: 'video_01', position: [37.5665, 126.978] }, // 서울
+  { id: 'video_02', position: [40.7128, -74.006] }, // 뉴욕
+  { id: 'video_03', position: [48.8566, 2.3522] }, // 파리
 ]
