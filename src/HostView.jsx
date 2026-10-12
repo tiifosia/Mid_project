@@ -3,10 +3,12 @@ import L from 'leaflet'
 import { supabase } from './supabase.js'
 import { VIDEOS } from './videos.js'
 import VideoModal from './VideoModal.jsx'
+import Intro from './Intro.jsx'
 import { addWorldLayers } from './worldLayers.js'
 
 const WORLD = [[-56, -168], [78, 190]] // 남극을 뺀 세계 전체
 const FLY_SECONDS = 0.6
+const REVEAL_SECONDS = 1.4 // 오프닝 뒤 세계 전체로 물러나며 선명해지는 시간
 
 export default function HostView() {
   const mapEl = useRef(null)
@@ -16,6 +18,17 @@ export default function HostView() {
   const [selected, setSelected] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const [number, setNumber] = useState('')
+  const [intro, setIntro] = useState(true)
+  const [revealed, setRevealed] = useState(false)
+  const [revealing, setRevealing] = useState(false)
+
+  // 오프닝이 걷히면: 가까이 당겨져 흐린 지도가 세계 전체로 물러나며 선명해지고 마커가 떠오른다
+  const reveal = () => {
+    setRevealed(true)
+    setRevealing(true)
+    mapRef.current.flyToBounds(WORLD, { duration: REVEAL_SECONDS, easeLinearity: 0.2 })
+    setTimeout(() => setRevealing(false), REVEAL_SECONDS * 1000)
+  }
 
   // 지점으로 슈욱 줌인(+ 블러) → 도착하면 영상 모달
   const open = (id) => {
@@ -51,6 +64,7 @@ export default function HostView() {
     mapRef.current = map
     map.fitBounds(WORLD)
     map.setMinZoom(map.getZoom())
+    map.setZoom(map.getZoom() + 1.5, { animate: false }) // 오프닝 동안은 가까이 당겨 둔다
 
     // 외부 타일 대신 Natural Earth 국가 경계를 직접 그린다: API 키 불필요, 오프라인 동작
     let alive = true
@@ -60,7 +74,7 @@ export default function HostView() {
       const icon = L.divIcon({
         className: '',
         iconSize: [40, 40],
-        html: `<div class="marker"><span class="marker-ring"></span><span class="marker-ring"></span><span class="marker-core"></span><span class="marker-label">${i + 1}</span></div>`,
+        html: `<div class="marker" style="--d:${(i * 137) % 800}ms"><span class="marker-ring"></span><span class="marker-ring"></span><span class="marker-core"></span><span class="marker-label">${i + 1}</span></div>`,
       })
       const marker = L.marker(position, { icon }).addTo(map).on('click', () => open(id))
       markerEls.current[id] = marker.getElement().querySelector('.marker')
@@ -104,9 +118,9 @@ export default function HostView() {
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-background">
       <div
-        className={`relative h-full w-full transition-[filter] ${selected ? 'pointer-events-none blur-xl' : ''}`}
+        className={`relative h-full w-full transition-[filter] ${selected || !revealed ? 'pointer-events-none blur-xl' : ''} ${revealed ? 'is-revealed' : ''}`}
         style={{
-          transitionDuration: `${FLY_SECONDS}s`,
+          transitionDuration: `${revealing ? REVEAL_SECONDS : FLY_SECONDS}s`,
           // 줌인: 출발과 함께 빠르게 흐려짐 / 줌아웃: 날아가는 동안 흐림을 유지하다 도착하며 선명해짐
           transitionTimingFunction: selected ? 'cubic-bezier(0.16, 1, 0.3, 1)' : 'cubic-bezier(0.7, 0, 0.84, 0)',
         }}
@@ -119,7 +133,7 @@ export default function HostView() {
       {/* 번호로 지점 이동 */}
       <form
         onSubmit={submitNumber}
-        className={`glass absolute left-1/2 top-6 z-[1000] flex -translate-x-1/2 items-center gap-3 rounded-full px-5 py-2 transition-opacity ${selected ? 'pointer-events-none opacity-0' : ''}`}
+        className={`glass absolute left-1/2 top-6 z-[1000] flex -translate-x-1/2 items-center gap-3 rounded-full px-5 py-2 transition-opacity duration-500 ${selected || !revealed || revealing ? 'pointer-events-none opacity-0' : ''}`}
       >
         <span className="text-xs tracking-[0.3em] text-text-secondary">NO.</span>
         <input
@@ -136,6 +150,7 @@ export default function HostView() {
           <video key={id} src={`${import.meta.env.BASE_URL}videos/${id}.mp4`} preload="auto" muted />
         ))}
       </div>
+      {intro && <Intro onReveal={reveal} onDone={() => setIntro(false)} />}
       {showModal && selected && (
         <VideoModal id={selected} row={rows[selected]} onClose={close} onDecide={(choice) => decide(selected, choice)} />
       )}
