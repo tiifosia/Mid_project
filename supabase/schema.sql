@@ -42,10 +42,19 @@ returns void language sql security definer set search_path = public as $$
 $$;
 drop function if exists public.close_voting(text);
 
+-- 6. 리셋 RPC: 호스트 화면의 RESET 버튼 — 투표 수 · 마감 · 판정을 처음으로 (정답 is_ai 는 그대로)
+create or replace function public.reset_votes()
+returns void language sql security definer set search_path = public as $$
+  update public.videos
+  set real_votes = 0, ai_votes = 0, status = 'voting', verdict = null
+  where true;
+$$;
+
 grant execute on function public.vote(text, text) to anon;
 grant execute on function public.decide(text, text) to anon;
+grant execute on function public.reset_votes() to anon;
 
--- 6. Realtime: videos 변경사항을 웹소켓으로 푸시 (이미 등록돼 있으면 건너뜀)
+-- 7. Realtime: videos 변경사항을 웹소켓으로 푸시 (이미 등록돼 있으면 건너뜀)
 do $$ begin
   if not exists (
     select 1 from pg_publication_tables
@@ -55,7 +64,7 @@ do $$ begin
   end if;
 end $$;
 
--- 7. API가 새 테이블/함수를 바로 인식하도록 갱신
+-- 8. API가 새 테이블/함수를 바로 인식하도록 갱신
 notify pgrst, 'reload schema';
 
 -- 테스트 후 초기화가 필요하면:
