@@ -28,8 +28,11 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-      # GitHub Pages는 /Mid_project/vote 같은 경로를 404로 처리하므로 앱을 404.html로도 제공한다
-      - run: cp dist/index.html dist/404.html
+      # GitHub Pages에는 SPA 라우팅이 없으므로 /vote/ 경로에 같은 앱을 두고, 그 밖의 경로는 404.html로 대체한다
+      - run: |
+          mkdir -p dist/vote
+          cp dist/index.html dist/vote/index.html
+          cp dist/index.html dist/404.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

@@ -12,6 +12,7 @@ export default function HostView() {
     const map = L.map(mapEl.current, {
       zoomControl: false,
       attributionControl: false,
+      preferCanvas: true, // 지도 선·면을 SVG 대신 캔버스 하나에 그려 드래그·블러를 가볍게
       zoomSnap: 0.25,
       maxBounds: [[-80, -190], [85, 200]],
       maxBoundsViscosity: 1,

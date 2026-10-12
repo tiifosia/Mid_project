@@ -71,7 +71,7 @@ export default function VideoModal({ id, onClose }) {
           ) : (
             <div className="flex flex-col items-center gap-3">
               <div className="rounded-2xl bg-text-primary p-3">
-                <QRCodeSVG value={`${window.location.origin}${import.meta.env.BASE_URL}vote?id=${id}`} size={128} />
+                <QRCodeSVG value={`${window.location.origin}${import.meta.env.BASE_URL}vote/?id=${id}`} size={128} />
               </div>
               <p className="text-sm text-text-secondary">스캔하고 투표하세요</p>
             </div>
