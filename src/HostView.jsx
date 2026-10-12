@@ -6,7 +6,7 @@ import VideoModal from './VideoModal.jsx'
 import { addWorldLayers } from './worldLayers.js'
 
 const WORLD = [[-56, -168], [78, 190]] // 남극을 뺀 세계 전체
-const FLY_SECONDS = 1.2
+const FLY_SECONDS = 0.6
 
 export default function HostView() {
   const mapEl = useRef(null)
@@ -21,14 +21,14 @@ export default function HostView() {
   const open = (id) => {
     const video = VIDEOS.find((v) => v.id === id)
     setSelected(id)
-    mapRef.current.flyTo(video.position, 5, { duration: FLY_SECONDS })
-    setTimeout(() => setShowModal(true), FLY_SECONDS * 1000)
+    mapRef.current.flyTo(video.position, 5, { duration: FLY_SECONDS, easeLinearity: 0.2 })
+    setTimeout(() => setShowModal(true), FLY_SECONDS * 800)
   }
 
   const close = () => {
     setShowModal(false)
     setSelected(null)
-    mapRef.current.flyToBounds(WORLD, { duration: FLY_SECONDS })
+    mapRef.current.flyToBounds(WORLD, { duration: FLY_SECONDS, easeLinearity: 0.2 })
   }
 
   // 호스트 판정: 투표 마감 + 판정 저장, 팝업은 바로 닫는다
@@ -104,7 +104,7 @@ export default function HostView() {
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-background">
       <div
-        className={`relative h-full w-full transition-[filter] ease-in ${selected ? 'pointer-events-none blur-xl' : ''}`}
+        className={`relative h-full w-full transition-[filter] ease-out ${selected ? 'pointer-events-none blur-xl' : ''}`}
         style={{ transitionDuration: `${FLY_SECONDS}s` }}
       >
         <div ref={mapEl} className="h-full w-full bg-background" />
@@ -122,8 +122,7 @@ export default function HostView() {
           value={number}
           onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))}
           inputMode="numeric"
-          placeholder={`1–${VIDEOS.length}`}
-          className="w-14 bg-transparent text-center text-text-primary outline-none placeholder:text-text-secondary/50"
+          className="w-14 bg-transparent text-center text-text-primary outline-none"
         />
       </form>
 
