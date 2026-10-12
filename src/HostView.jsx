@@ -87,13 +87,10 @@ export default function HostView() {
     }
   }, [])
 
-  // 스크롤 오프닝(포트폴리오 Top ~ About) → 끝까지 내리면 지도가 드러난다
+  // 스크롤 오프닝(포트폴리오 Top ~ About) → 시작하기를 누르면 지도가 펼쳐진다
   useEffect(() => {
     import('../intro/index.js').then(({ startIntro }) =>
-      startIntro(introEl.current, () => {
-        setIntro(false)
-        reveal()
-      }),
+      startIntro(introEl.current, { onStart: reveal, onDone: () => setIntro(false) }),
     )
   }, [])
 

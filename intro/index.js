@@ -5,7 +5,10 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import './style.css'
 import markup from './markup.html?raw'
 
-export async function startIntro(container, onDone) {
+const LEAVE_MS = 1000 // 오프닝이 흐려지며 걷히는 시간 (style.css 의 .pf-leaving 과 같게)
+
+// onStart: 시작하기를 누른 순간(지도 펼치기 시작) / onDone: 오프닝이 다 걷힌 뒤(제거)
+export async function startIntro(container, { onStart, onDone }) {
   container.innerHTML = markup.replace('%SIGNATURE%', `${import.meta.env.BASE_URL}signature.mp4`)
 
   // 포트폴리오 스크립트는 CDN 으로 받은 전역 gsap · ScrollTrigger 를 쓴다
@@ -14,17 +17,19 @@ export async function startIntro(container, onDone) {
   await import('./world-dots.js')
   await import('./main.js')
 
-  // 마지막 빈 화면이 화면을 가득 채우면(= 끝까지 내림) 스크롤 연출을 걷고 지도로 넘어간다.
-  // 그 순간 화면에는 뒤에 고정된 지도만 보이므로, 오프닝을 지워도 화면은 그대로다.
-  const io = new IntersectionObserver(
-    ([entry]) => {
-      if (entry.intersectionRatio < 0.98) return
-      io.disconnect()
+  // 시작하기 — 오프닝이 흐려지며 걷히는 동안 뒤에 고정된 지도가 줌아웃하며 펼쳐진다.
+  // 다 걷힌 뒤 스크롤 연출을 해제하고 오프닝을 지운다(그때 화면에는 지도만 보이므로 튀지 않는다).
+  const start = container.querySelector('.pf-start')
+  start.addEventListener('click', () => {
+    start.disabled = true
+    window.pageScroll?.lock(true)
+    container.classList.add('pf-leaving')
+    onStart()
+    setTimeout(() => {
       ScrollTrigger.getAll().forEach((t) => t.kill())
       document.querySelector('.veil')?.remove()
+      window.pageScroll?.lock(false)
       onDone()
-    },
-    { threshold: [0.98] },
-  )
-  io.observe(container.querySelector('.pf-end'))
+    }, LEAVE_MS)
+  })
 }

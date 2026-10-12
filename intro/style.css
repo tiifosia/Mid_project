@@ -1271,8 +1271,41 @@ html.is-deeplink body { visibility: hidden; animation: deeplink-failsafe 0s 3s f
 
 /* ==========================================================================
    전시 지도로 넘어가기 (추가)
-   오프닝 뒤에는 전시 지도가 고정돼 있다. 본문(main)은 배경색으로 덮고,
-   마지막 빈 화면만 투명하게 두어 끝까지 내리면 지도가 드러난다.
+   오프닝 뒤에는 전시 지도가 고정돼 있다. 본문(main)을 배경색으로 덮어 두고,
+   시작하기를 누르면 본문이 흐려지며 걷히고 그 뒤의 지도가 펼쳐진다.
    ========================================================================== */
 #top { background-color: var(--c-bg); }
-.pf-end { height: 100vh; height: 100svh; }
+
+.pf-start-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  min-height: 50svh;
+}
+
+.pf-start {
+  font: inherit;
+  font-size: 15px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.2em;
+  color: var(--c-text);
+  background: transparent;
+  border: 1px solid rgba(245, 245, 245, 0.18);
+  border-radius: 999px;
+  padding: 18px 52px;
+  cursor: pointer;
+  transition: border-color 0.3s, color 0.3s, box-shadow 0.3s;
+}
+.pf-start:hover,
+.pf-start:focus-visible {
+  outline: none;
+  border-color: var(--c-point);
+  color: var(--c-point);
+  box-shadow: 0 0 28px rgba(195, 189, 255, 0.25);
+}
+
+/* 걷히는 동안 — 본문은 흐려지며, 헤더까지 함께 사라진다.
+   흐림(filter)은 본문(#top)에만 건다. 헤더를 품은 바깥 상자에 걸면 고정(fixed) 헤더의 기준이 바뀌어 튄다. */
+.pf-leaving { opacity: 0; transition: opacity 1s ease; pointer-events: none; }
+.pf-leaving #top { filter: blur(16px); transition: filter 1s ease; }
