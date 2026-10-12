@@ -1,0 +1,1278 @@
+/* 포트폴리오(tiifosia/portfolio) css/style.css 를 그대로 옮겼다. 맨 아래 "전시 지도로 넘어가기" 블록만 추가. */
+/* ==========================================================================
+   S-Core Dream — 웹폰트
+   CDN(jsdelivr/projectnoonnu)에서 5개 굵기만 선별 로드한다.
+   로컬 폰트로 교체할 경우 src의 url()만 assets/fonts/... 로 바꾸면 된다.
+   ========================================================================== */
+@font-face {
+  font-family: 'S-Core Dream';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff') format('woff');
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'S-Core Dream';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-4Regular.woff') format('woff');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'S-Core Dream';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-5Medium.woff') format('woff');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'S-Core Dream';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-6Bold.woff') format('woff');
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'S-Core Dream';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-8Heavy.woff') format('woff');
+  font-weight: 800;
+  font-display: swap;
+}
+
+/* ==========================================================================
+   디자인 토큰
+   ========================================================================== */
+:root {
+  /* 색상 */
+  --c-bg:        #111111;  /* 메인 배경 */
+  --c-bg-sub:    #333333;  /* 서브 배경 */
+  --c-text:      #F5F5F5;  /* 메인 텍스트 */
+  --c-text-sub:  #8D8D8D;  /* 보조 텍스트 */
+  --c-point:     #C3BDFF;  /* 포인트 — 커서/호버/얇은 선에만 */
+  /* 모바일 메뉴 — 유리 뒤로 밝은 썸네일이 지날 때의 가독성 확보용 */
+  --c-nav-mobile: #B2B2B2;
+  --c-line:      rgba(245, 245, 245, 0.10);
+
+  /* 폰트 위계 */
+  --ff: 'S-Core Dream', 'Pretendard', -apple-system, BlinkMacSystemFont,
+        'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --fw-light:   300;  /* 보조 텍스트 */
+  --fw-regular: 400;  /* 본문 */
+  --fw-medium:  500;  /* 라벨 · 내비 */
+  --fw-bold:    600;  /* 섹션 제목 */
+  --fw-heavy:   800;  /* 메인 타이틀 */
+
+  /* 레이아웃 */
+  /* 유리 — 배경(#111111)보다 밝아야 평평한 구간에서도 판이 인지된다 */
+  --c-glass:      rgba(17, 17, 17, 0.65);
+  --c-glass-line: rgba(255, 255, 255, 0.08);
+  --glass-range:  100px;
+
+  --z-header: 9999;   /* 모든 스크롤 콘텐츠 위 */
+  --z-modal:  10000;  /* 헤더까지 덮는 최상단 */
+
+  --header-h: 72px;
+  --header-top: 24px;   /* 화면 상단에서 띄우는 거리 */
+  --header-w: 800px;    /* 플로팅 바 최대 너비 */
+  --header-r: 40px;     /* 캡슐 라운드 (높이의 절반으로 클램프됨) */
+  /* 스퀘어클(연속 곡률) 마스크 — 캡 SVG 는 72x72 정사각 스퀘어클을 좌/우 절반씩
+     viewBox 로 잘라 쓴다. 캡을 항상 '높이의 절반' 크기로 깔면 viewBox 비율(1:2)과
+     mask-size 비율이 같아 균일 확대만 일어난다 = 어떤 폭에서도 곡률이 안 찌그러진다.
+     링 두께 1px 은 안쪽 패스를 1px 안으로 들여 evenodd 로 뚫어 만들었다. */
+  --sq-cap: calc(var(--header-h) / 2);
+  --sq-fill-l: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 72'><path d='M36 0c12.6012 0 18.9018 0 23.7148 2.4524a22.5 22.5 0 0 1 9.8329 9.8329c2.4524 4.813 2.4524 11.1136 2.4524 23.7148L72 36c0 12.6012 0 18.9018 -2.4524 23.7148a22.5 22.5 0 0 1 -9.8329 9.8329c-4.813 2.4524 -11.1136 2.4524 -23.7148 2.4524L36 72c-12.6012 0 -18.9018 0 -23.7148 -2.4524a22.5 22.5 0 0 1 -9.8329 -9.8329c-2.4524 -4.813 -2.4524 -11.1136 -2.4524 -23.7148L0 36c0 -12.6012 0 -18.9018 2.4524 -23.7148a22.5 22.5 0 0 1 9.8329 -9.8329c4.813 -2.4524 11.1136 -2.4524 23.7148 -2.4524Z' fill='black'/></svg>");
+  --sq-fill-r: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='36 0 36 72'><path d='M36 0c12.6012 0 18.9018 0 23.7148 2.4524a22.5 22.5 0 0 1 9.8329 9.8329c2.4524 4.813 2.4524 11.1136 2.4524 23.7148L72 36c0 12.6012 0 18.9018 -2.4524 23.7148a22.5 22.5 0 0 1 -9.8329 9.8329c-4.813 2.4524 -11.1136 2.4524 -23.7148 2.4524L36 72c-12.6012 0 -18.9018 0 -23.7148 -2.4524a22.5 22.5 0 0 1 -9.8329 -9.8329c-2.4524 -4.813 -2.4524 -11.1136 -2.4524 -23.7148L0 36c0 -12.6012 0 -18.9018 2.4524 -23.7148a22.5 22.5 0 0 1 9.8329 -9.8329c4.813 -2.4524 11.1136 -2.4524 23.7148 -2.4524Z' fill='black'/></svg>");
+  --sq-ring-l: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 72'><path d='M36 0c12.6012 0 18.9018 0 23.7148 2.4524a22.5 22.5 0 0 1 9.8329 9.8329c2.4524 4.813 2.4524 11.1136 2.4524 23.7148L72 36c0 12.6012 0 18.9018 -2.4524 23.7148a22.5 22.5 0 0 1 -9.8329 9.8329c-4.813 2.4524 -11.1136 2.4524 -23.7148 2.4524L36 72c-12.6012 0 -18.9018 0 -23.7148 -2.4524a22.5 22.5 0 0 1 -9.8329 -9.8329c-2.4524 -4.813 -2.4524 -11.1136 -2.4524 -23.7148L0 36c0 -12.6012 0 -18.9018 2.4524 -23.7148a22.5 22.5 0 0 1 9.8329 -9.8329c4.813 -2.4524 11.1136 -2.4524 23.7148 -2.4524ZM36.6 1c12.0411 0 18.0617 0 22.6608 2.3434a21.5 21.5 0 0 1 9.3958 9.3958c2.3434 4.5991 2.3434 10.6197 2.3434 22.6608L71 36.6c0 12.0411 0 18.0617 -2.3434 22.6608a21.5 21.5 0 0 1 -9.3958 9.3958c-4.5991 2.3434 -10.6197 2.3434 -22.6608 2.3434L35.4 71c-12.0411 0 -18.0617 0 -22.6608 -2.3434a21.5 21.5 0 0 1 -9.3958 -9.3958c-2.3434 -4.5991 -2.3434 -10.6197 -2.3434 -22.6608L1 35.4c0 -12.0411 0 -18.0617 2.3434 -22.6608a21.5 21.5 0 0 1 9.3958 -9.3958c4.5991 -2.3434 10.6197 -2.3434 22.6608 -2.3434Z' fill='black' fill-rule='evenodd'/></svg>");
+  --sq-ring-r: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='36 0 36 72'><path d='M36 0c12.6012 0 18.9018 0 23.7148 2.4524a22.5 22.5 0 0 1 9.8329 9.8329c2.4524 4.813 2.4524 11.1136 2.4524 23.7148L72 36c0 12.6012 0 18.9018 -2.4524 23.7148a22.5 22.5 0 0 1 -9.8329 9.8329c-4.813 2.4524 -11.1136 2.4524 -23.7148 2.4524L36 72c-12.6012 0 -18.9018 0 -23.7148 -2.4524a22.5 22.5 0 0 1 -9.8329 -9.8329c-2.4524 -4.813 -2.4524 -11.1136 -2.4524 -23.7148L0 36c0 -12.6012 0 -18.9018 2.4524 -23.7148a22.5 22.5 0 0 1 9.8329 -9.8329c4.813 -2.4524 11.1136 -2.4524 23.7148 -2.4524ZM36.6 1c12.0411 0 18.0617 0 22.6608 2.3434a21.5 21.5 0 0 1 9.3958 9.3958c2.3434 4.5991 2.3434 10.6197 2.3434 22.6608L71 36.6c0 12.0411 0 18.0617 -2.3434 22.6608a21.5 21.5 0 0 1 -9.3958 9.3958c-4.5991 2.3434 -10.6197 2.3434 -22.6608 2.3434L35.4 71c-12.0411 0 -18.0617 0 -22.6608 -2.3434a21.5 21.5 0 0 1 -9.3958 -9.3958c-2.3434 -4.5991 -2.3434 -10.6197 -2.3434 -22.6608L1 35.4c0 -12.0411 0 -18.0617 2.3434 -22.6608a21.5 21.5 0 0 1 9.3958 -9.3958c4.5991 -2.3434 10.6197 -2.3434 22.6608 -2.3434Z' fill='black' fill-rule='evenodd'/></svg>");
+  --gutter: clamp(24px, 5vw, 80px);
+  --max-w: 1440px;
+  --section-pad: clamp(96px, 14vh, 180px);
+}
+
+/* ==========================================================================
+   리셋 & 베이스
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background-color: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--ff);
+  font-weight: var(--fw-regular);
+  font-size: 16px;
+  line-height: 1.7;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, p, figure { margin: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
+img { display: block; max-width: 100%; }
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.35s ease;
+}
+a:hover { color: var(--c-point); }
+
+.accent { color: var(--c-point); }
+
+/* 스크롤 진입 전 상태. GSAP 이 인라인 스타일로 덮어쓰며,
+   GSAP 미로드나 모션 최소화 설정에서는 JS 가 속성을 제거해 즉시 노출한다. */
+[data-reveal] { opacity: 0; }
+
+/* 필터 정의만 담는 SVG.
+   display:none 으로 숨기면 크로미움에서 filter 참조가 해석되지 않으므로(실측 확인),
+   렌더 트리에 남겨둔 채 크기를 0 으로 만든다. */
+.svg-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+::selection { background: var(--c-point); color: var(--c-bg); }
+
+:focus-visible {
+  outline: 1px solid var(--c-point);
+  outline-offset: 4px;
+}
+
+/* ==========================================================================
+   공통 레이아웃 유틸
+   ========================================================================== */
+.container {
+  width: 100%;
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section {
+  padding-block: var(--section-pad);
+  border-top: 1px solid var(--c-line);
+  /* 떠 있는 헤더에 가려지지 않도록 앵커 이동 위치를 보정 */
+  scroll-margin-top: calc(var(--header-top) + var(--header-h) + 16px);
+}
+
+/* 섹션 번호 라벨 — 보조 위계, 트래킹 넓게 */
+.section__label {
+  display: block;
+  margin-bottom: 28px;
+  color: var(--c-point);
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* 섹션 제목 */
+.section__title {
+  max-width: 20ch;
+  font-size: clamp(30px, 4.4vw, 56px);
+  font-weight: var(--fw-bold);
+  line-height: 1.28;
+  letter-spacing: -0.03em;
+}
+
+/* ==========================================================================
+   헤더
+   ========================================================================== */
+.header {
+  position: fixed;
+  top: var(--header-top);
+  inset-inline: 0;
+  margin-inline: auto;
+  width: min(var(--header-w), calc(100% - 2 * var(--gutter)));
+  height: var(--header-h);
+  border-radius: var(--header-r);
+  z-index: var(--z-header);
+  display: flex;
+  align-items: center;
+
+  /* 래퍼는 '떠 있는 깊이감'만 맡는다. 여기에 마스크나 filter 를 걸면
+     바깥 그림자가 잘리고, 자손의 backdrop-filter 까지 죽는다 (실측 확인).
+     opacity / will-change: backdrop-filter 도 같은 이유로 금지. */
+  background: transparent;
+  transform: translateZ(0);
+
+  animation: glass-shadow linear both;
+  animation-timeline: scroll(root block);
+  animation-range: 0 var(--glass-range);
+}
+
+/* 본체 — 스퀘어클로 잘리는 유리 면. 블러·틴트·안쪽 두께감을 담당한다.
+   마스크는 자기 자신에게만 건다(부모에 걸면 형제 레이어의 굴절이 죽는다). */
+.header__glass {
+  position: absolute;
+  inset: 0;
+  /* border-radius 를 주면 안 된다. 박스가 먼저 캡슐로 잘린 뒤 마스크가 적용돼
+     스퀘어클이 캡슐 바깥으로 부푸는 45도 구간이 통째로 깎인다 (실측 확인).
+     외곽 형태는 오직 마스크가 정한다. */
+  pointer-events: none;
+  -webkit-mask-image: var(--sq-fill-l), var(--sq-fill-r), linear-gradient(#000 0 0);
+          mask-image: var(--sq-fill-l), var(--sq-fill-r), linear-gradient(#000 0 0);
+  -webkit-mask-position: left center, right center, center;
+          mask-position: left center, right center, center;
+  -webkit-mask-size: var(--sq-cap) 100%, var(--sq-cap) 100%,
+                     calc(100% - 2 * var(--sq-cap)) 100%;
+          mask-size: var(--sq-cap) 100%, var(--sq-cap) 100%,
+                     calc(100% - 2 * var(--sq-cap)) 100%;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-composite: source-over;
+          mask-composite: add;
+  animation: glass-fade linear both;
+  animation-timeline: scroll(root block);
+  animation-range: 0 var(--glass-range);
+}
+
+/* 엣지 굴절 레이어 — 빛이 꺾이는 곡면.
+   마스크로 중앙을 뚫어 테두리 링에만 SVG 굴절·반사광을 발현시킨다.
+   backdrop-filter 와 opacity 는 같은 요소에 둬야 굴절 강도가 비례한다. */
+.header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* url() 필터를 백드롭에 못 쓰는 브라우저용 폴백.
+     아래 선언 파싱에 실패하면 이 값이 유지돼 최소한 블러는 남는다. */
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  backdrop-filter: url(#glass-3d);
+  -webkit-backdrop-filter: url(#glass-3d);
+  will-change: backdrop-filter, transform;
+  transform: translateZ(0);
+  -webkit-mask-image: var(--sq-ring-l), var(--sq-ring-r),
+                      linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+          mask-image: var(--sq-ring-l), var(--sq-ring-r),
+                      linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  -webkit-mask-position: left center, right center, center top, center bottom;
+          mask-position: left center, right center, center top, center bottom;
+  -webkit-mask-size: var(--sq-cap) 100%, var(--sq-cap) 100%,
+                     calc(100% - 2 * var(--sq-cap)) 1px,
+                     calc(100% - 2 * var(--sq-cap)) 1px;
+          mask-size: var(--sq-cap) 100%, var(--sq-cap) 100%,
+                     calc(100% - 2 * var(--sq-cap)) 1px,
+                     calc(100% - 2 * var(--sq-cap)) 1px;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-composite: source-over;
+          mask-composite: add;
+  opacity: 0;
+  animation: glass-layer-fade linear both;
+  animation-timeline: scroll(root block);
+  animation-range: 0 var(--glass-range);
+}
+
+/* 엣지 빛 맺힘 — 같은 링에 포인트 컬러와 두께감을 겹친다. */
+.header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* 위쪽은 흰 빛, 아래로 내려오며 포인트 컬러가 감돈다.
+     1px 은 CSS 렌더 최소 폭이라 더 얇아질 수 없다 — 여기서부터는
+     밝기가 두께감을 좌우하므로 알파를 눅인다. */
+  /* 두 겹이다.
+     - 세로 성분: 예전 inset 하이라이트를 대신한다. 폭에 상관없이 균일해서
+       상단 선이 중앙에서도 캡에서도 같은 밝기로 떨어진다.
+     - 160deg 성분: 원래의 방향성 반사광과 포인트 컬러.
+     둘 다 같은 스퀘어클 링 마스크를 통과하므로 곡률을 그대로 따라간다. */
+  background:
+    linear-gradient(to bottom,
+              rgba(255, 255, 255, 0.10) 0%,
+              rgba(255, 255, 255, 0.02) 55%,
+              rgba(255, 255, 255, 0.04) 100%),
+    linear-gradient(160deg,
+              rgba(255, 255, 255, 0.3)  0%,
+              rgba(255, 255, 255, 0.05) 34%,
+              rgba(195, 189, 255, 0.38) 66%,
+              rgba(255, 255, 255, 0.07) 100%);
+  -webkit-mask-image: var(--sq-ring-l), var(--sq-ring-r),
+                      linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+          mask-image: var(--sq-ring-l), var(--sq-ring-r),
+                      linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  -webkit-mask-position: left center, right center, center top, center bottom;
+          mask-position: left center, right center, center top, center bottom;
+  -webkit-mask-size: var(--sq-cap) 100%, var(--sq-cap) 100%,
+                     calc(100% - 2 * var(--sq-cap)) 1px,
+                     calc(100% - 2 * var(--sq-cap)) 1px;
+          mask-size: var(--sq-cap) 100%, var(--sq-cap) 100%,
+                     calc(100% - 2 * var(--sq-cap)) 1px,
+                     calc(100% - 2 * var(--sq-cap)) 1px;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-composite: source-over;
+          mask-composite: add;
+  opacity: 0;
+  animation: glass-layer-fade linear both;
+  animation-timeline: scroll(root block);
+  animation-range: 0 var(--glass-range);
+}
+
+/* box-shadow 목록은 개수와 순서가 같아야 보간된다.
+   바깥 그림자는 래퍼(.header), 안쪽 두께감은 본체(.header__glass) 로 갈라 둔다. */
+@keyframes glass-shadow {
+  from { box-shadow: 0 12px 32px rgba(0, 0, 0, 0); }
+  to   { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35); }
+}
+
+/* inset box-shadow 는 사각형 기준이라 캡 구간에서 마스크에 잘린다.
+   두께감과 엣지 하이라이트는 스퀘어클 링(::after)이 전담한다. */
+@keyframes glass-fade {
+  from { background-color: rgba(17, 17, 17, 0); }
+  to   { background-color: var(--c-glass); }
+}
+
+@keyframes glass-layer-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* 중앙 평면부의 블러는 스크롤 타임라인에 태우지 않는다.
+   사파리는 animation-timeline 을 구문상 지원해 @supports not 블록을 건너뛰지만,
+   키프레임 안의 backdrop-filter 는 적용하지 못한다 (테두리 opacity 는 나오는데
+   블러만 빠지는 증상). 그래서 브라우저 구분 없이 JS 의 .is-scrolled 로만 켠다. */
+.header__glass {
+  transition: backdrop-filter 0.3s ease,
+              -webkit-backdrop-filter 0.3s ease;
+}
+
+.header.is-scrolled .header__glass {
+  backdrop-filter: blur(16px) saturate(180%);
+  /* Safari 는 접두사 없이는 백드롭 블러를 적용하지 않는다 */
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+}
+
+/* 스크롤 타임라인 미지원 — 나머지 속성도 .is-scrolled 로 이원화. */
+@supports not (animation-timeline: scroll()) {
+  .header,
+  .header__glass,
+  .header::before,
+  .header::after {
+    animation: none;
+  }
+
+  .header { transition: box-shadow 0.3s ease; }
+
+  .header__glass {
+    transition: background-color 0.3s ease,
+                backdrop-filter 0.3s ease,
+                -webkit-backdrop-filter 0.3s ease;
+  }
+
+  .header::before,
+  .header::after {
+    transition: opacity 0.3s ease;
+  }
+
+  .header.is-scrolled {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  }
+
+  .header.is-scrolled .header__glass {
+    background-color: var(--c-glass);
+  }
+
+  .header.is-scrolled::before,
+  .header.is-scrolled::after {
+    opacity: 1;
+  }
+}
+
+/* 로고·내비를 반사광·노이즈 레이어 위로 올린다.
+   가상 요소는 위치 지정이라 그대로 두면 일반 자식보다 위에 그려진다. */
+.header__inner {
+  position: relative;
+  z-index: 1;
+  /* 캡슐 안쪽 여백. .container 의 큰 거터를 덮어쓴다. */
+  max-width: none;
+  padding-inline: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.header__logo {
+  /* 좁은 화면에서 두 줄로 꺾이지 않게 */
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.02em;
+}
+
+.nav {
+  display: flex;
+  gap: clamp(20px, 3vw, 40px);
+}
+
+.nav__link {
+  color: var(--c-text-sub);
+  font-size: 13px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.06em;
+}
+
+/* ==========================================================================
+   히어로
+   ========================================================================== */
+.hero {
+  /* 서명이 들어오면서 무게가 아래로 쏠려, 타이틀과 서명을 같이 끌어올린다.
+     아래 패딩을 2배로 주면 세로 중앙이 그 절반만큼 위로 올라간다. */
+  --hero-lift: clamp(0px, 5.5vh, 50px);
+  /* iOS 사파리의 vh 는 툴바를 숨긴 '큰 뷰포트' 기준이라 100svh 인 히어로보다
+     크게 나온다. 그 차이만큼 서명이 위로 밀려 타이틀을 덮었다. svh 로 맞춘다. */
+  --hero-lift: clamp(0px, 5.5svh, 50px);
+  /* 서명만 추가로 왼쪽으로. 좁은 화면에서는 같이 줄어야 화면 밖으로 안 나간다. */
+  --sig-shift: clamp(0px, 9.7vw, 140px);
+  /* 제목 글자 크기 — 서명 크기 계산에서도 쓴다.
+     1줄: 한 줄에 들어가는 크기를 넘지 않게. Generated World, 는 Heavy 로 약 8.1em
+          (실제 화면 캡처에서 역산) → 여유 약 4% 를 더해 8.4 로 나눈다.
+     2줄: 끝의 '?' 가 1줄 World 의 'o' 끝에 오도록 1줄의 0.675 배.
+          ('o' 끝 = 1줄 6.66em, What remains of truth? = Light 9.87em — 실제 폰트로 측정)
+          1줄보다 항상 짧으므로 따로 폭 제한은 필요 없다. */
+  --hero-w: calc(min(100vw, var(--max-w)) - 2 * var(--gutter));
+  --hero-fs: min(clamp(44px, 9.5vw, 132px), var(--hero-w) / 8.4);
+  --hero-fs2: calc(var(--hero-fs) * 0.675);
+  position: relative;
+  min-height: 100svh;
+  /* 서명 영상의 screen 합성 대상을 여기로 고정한다. body 배경은 캔버스로
+     승격돼 스태킹 컨텍스트 안에 안 그려질 수 있어서다. 서명 상자 자체에
+     배경을 주면 그 사각형이 타이틀을 덮어버린다 (실제 iOS 에서 발생). */
+  background-color: var(--c-bg);
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: calc(var(--header-h) + 40px) calc(40px + 2 * var(--hero-lift));
+}
+
+.hero__title {
+  font-size: var(--hero-fs);
+  font-weight: var(--fw-heavy);
+  line-height: 1.04;
+  letter-spacing: -0.045em;
+}
+
+.hero__title em {
+  display: block;
+  font-size: var(--hero-fs2);
+  /* 자간을 이 줄 크기 기준으로 다시 잡는다. 그대로 두면 1줄 크기로 계산된 px 가
+     물려 내려와, 작아진 이 줄에서는 자간이 더 좁아진다(실측 '?' 가 42px 모자람). */
+  letter-spacing: -0.045em;
+  font-style: normal;
+  font-weight: var(--fw-light);
+  color: var(--c-text-sub);
+}
+
+/* 서명이 들어갈 수 있는 최대 폭 — 서명 상자 윗변이 제목 아랫변보다 16px 아래에 오도록.
+     제목 아랫변  = (화면높이 + 위패딩 - 아래패딩 + 제목높이) / 2   (세로 가운데 정렬)
+     서명 윗변    = 화면높이 - 아래여백 - 폭 × 0.8976                (영상 비율 754/840)
+   두 식을 풀면 hero-lift 는 서로 지워지고 아래만 남는다(제목 높이 = 1.04 × (1줄 + 2줄 크기)). */
+.signature {
+  --sig-fit: calc((50vh + 20px - clamp(24px, 7vh, 88px) - (var(--header-h) + 40px) / 2
+                   - 0.52 * (var(--hero-fs) + var(--hero-fs2)) - 16px) / 0.8976);
+}
+/* svh 를 모르는 브라우저에서 계산이 통째로 무효가 되지 않게 지원할 때만 덮어쓴다 */
+@supports (height: 1svh) {
+  .signature {
+    --sig-fit: calc((50svh + 20px - clamp(24px, 7svh, 88px) - (var(--header-h) + 40px) / 2
+                     - 0.52 * (var(--hero-fs) + var(--hero-fs2)) - 16px) / 0.8976);
+  }
+}
+
+/* 서명 영상 — 우측 하단 여백에 놓고, 검은 배경은 screen 합성으로 날린다.
+   컨테이너에 배경과 isolation 을 직접 주는 이유: body 배경은 캔버스로
+   승격돼 스태킹 컨텍스트 안에 그려지지 않는 경우가 있어, 합성 대상을
+   확실히 고정해 두려는 것이다. 배경색이 페이지와 같으므로 사각형은 보이지 않는다. */
+.signature {
+  /* 흐름에서 빼 둔다 — 히어로의 세로 중앙 정렬이 타이틀 하나만 보도록 */
+  position: absolute;
+  right: calc(clamp(0px, 4vw, 64px) + var(--sig-shift));
+  bottom: calc(clamp(24px, 7vh, 88px) + var(--hero-lift));
+  bottom: calc(clamp(24px, 7svh, 88px) + var(--hero-lift));
+  /* 제목 아래 빈자리보다 커지면 제목(특히 긴 둘째 줄)을 덮는다. 그 높이에 맞춰 줄인다. */
+  width: min(clamp(240px, 26vw, 336px), var(--sig-fit));
+  line-height: 0;
+  pointer-events: none;
+  /* 비디오 가장자리 한 줄이 합성에서 빠져 검게 남는 경우가 있어 잘라낸다.
+     영상에 검은 여백이 들어 있어 1px 은 잘려도 서명에 닿지 않는다. */
+  overflow: hidden;
+}
+
+.signature__video {
+  display: block;
+  width: calc(100% + 2px);
+  height: auto;
+  margin: -1px;
+  mix-blend-mode: screen;
+}
+
+/* 좁은 화면에서는 절대배치를 풀고 그냥 흐름에 둔다.
+   세로 여유가 적어 서명 상자가 타이틀 위로 올라오는데, 상자에 불투명 배경이
+   깔려 있어 글자를 통째로 가려버린다. 흐름에 두면 겹칠 수가 없다. */
+@media (max-width: 768px) {
+  .hero { --hero-lift: 0px; --sig-shift: 0px; }
+  .signature {
+    position: static;
+    width: clamp(180px, 52vw, 240px);
+    margin-block: clamp(16px, 3.5svh, 32px) 0;
+    margin-inline: auto clamp(0px, 4vw, 40px);
+  }
+}
+
+/* 가로로 누운 좁은 화면 — 세로가 더 빠듯하다 */
+@media (max-height: 560px) {
+  .hero { --hero-lift: 0px; }
+  .signature { width: min(clamp(132px, 17vw, 184px), var(--sig-fit)); }
+}
+
+/* ==========================================================================
+   히어로 → 질문 타이핑 (진행은 js 의 스크롤 타임라인이 맡는다)
+   ========================================================================== */
+.hero__ask {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  /* 떠 있는 헤더 아래 남는 영역의 가운데 */
+  padding: calc(var(--header-top) + var(--header-h)) var(--gutter) 0;
+  /* 문장 뒤 후광이 화면 밖으로 번져 가로 스크롤을 만들지 않게 */
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* display 를 줬으므로 hidden 속성이 먹도록 다시 명시 */
+.hero__ask[hidden] { display: none; }
+
+.hero__question {
+  position: relative;
+  isolation: isolate;
+  max-width: 12.5em;
+  font-size: clamp(24px, 4.2vw, 60px);
+  font-weight: var(--fw-light);
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+  text-align: center;
+  /* 한국어가 단어 중간에서 꺾이지 않게, 두 줄 길이는 비슷하게 */
+  word-break: keep-all;
+  text-wrap: balance;
+  /* 글자 둘레의 옅은 빛 */
+  text-shadow: 0 0 0.5em rgba(195, 189, 255, 0.35);
+}
+
+/* 문장 뒤의 후광 — 포인트 컬러를 아주 옅게 번지게. 타이핑이 진행될수록 짙어진다(--glow). */
+.hero__question::before {
+  content: '';
+  position: absolute;
+  inset: -45% -20%;
+  z-index: -1;
+  background: radial-gradient(closest-side,
+              rgba(195, 189, 255, 0.16), rgba(195, 189, 255, 0.06) 55%, rgba(195, 189, 255, 0) 100%);
+  filter: blur(24px);
+  opacity: var(--glow, 1);
+  pointer-events: none;
+}
+
+/* 아직 쓰지 않은 글자는 투명하게 — 자리는 처음부터 다 차지하므로
+   쓰는 동안 줄바꿈이 움직이지 않는다. */
+.hero__char:not(.is-on) { color: transparent; text-shadow: none; }
+
+/* 커서 — 글자에 붙이지 않고 따로 두어 js 가 글자 위치를 재서 옮긴다.
+   글자 뒤에 가상요소로 붙였더니 줄 끝 글자(예: '근거로'의 '로')에서
+   글자 상자가 두 줄로 쪼개지며 커서가 두 줄 높이로 늘어났다(실측). */
+.hero__caret {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  background-color: var(--c-point);
+  text-shadow: none;
+  pointer-events: none;
+  animation: caret-blink 1s steps(1) infinite;
+}
+
+@keyframes caret-blink {
+  50% { opacity: 0; }
+}
+
+/* 연출 없이 보여줄 때 — 첫 화면 다음에 제 화면을 하나 차지하고 가운데에 놓인다 */
+.hero__ask.is-static {
+  position: static;
+  min-height: 70vh;
+  min-height: 70svh;
+  padding-top: 0;
+}
+
+/* 제목 — 타이포는 .section__title 과 공유해 Archive 와 항상 같게 유지한다.
+   여기서는 위치만 잡는다. */
+.about__title {
+  margin-top: 4px;
+}
+
+/* Project 소개 다음의 Members — 두 묶음이 구분되게 띄운다 */
+.about__title--next {
+  margin-top: clamp(56px, 8vh, 96px);
+}
+
+/* 소개 · 멤버 — 제목보다 작고 얇게 한 단계 아래 위계, 보조 텍스트 색 */
+.about__desc,
+.about__members {
+  margin-top: clamp(16px, 2vh, 22px);
+  color: var(--c-text-sub);
+  font-size: clamp(18px, 1.9vw, 24px);
+  font-weight: var(--fw-medium);
+  letter-spacing: -0.01em;
+}
+
+/* 소개 문장 — 한 줄이 너무 길지 않게, 한국어는 단어 단위로 꺾는다 */
+.about__desc {
+  max-width: 34em;
+  word-break: keep-all;
+  /* 마지막 줄에 한 단어만 남지 않게 */
+  text-wrap: pretty;
+}
+
+.about__members {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(4px, 0.8vh, 8px);
+}
+
+/* 작품 이름 — 포인트 컬러에 옅은 후광 */
+.about__name {
+  text-shadow: 0 0 0.6em rgba(195, 189, 255, 0.45);
+}
+
+
+/* ==========================================================================
+   Project 스토리 — 점 세계지도 위에서 작품 진행 방식을 네 단계로
+   색: 육지 #333333 · 중립 #8D8D8D · 실제로 판단 #F5F5F5 · AI로 판단 #C3BDFF
+   ========================================================================== */
+.story {
+  --story-real: var(--c-text);
+  --story-ai: var(--c-point);
+  --story-neutral: var(--c-text-sub);
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  margin-top: clamp(24px, 4vh, 48px);
+}
+
+.story__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+  align-items: center;
+  gap: clamp(32px, 4vw, 72px);
+  height: 100%;
+  /* 떠 있는 헤더 아래 영역의 가운데 */
+  padding-top: calc(var(--header-top) + var(--header-h));
+}
+
+/* ── 글 ─────────────────────────────────────────── */
+.story__count {
+  color: var(--c-point);
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.18em;
+}
+
+.story__num { color: var(--c-text); }
+
+/* 네 문장을 한 칸에 겹쳐 두고 단계마다 바꿔 보여준다 */
+.story__steps {
+  display: grid;
+  margin: clamp(16px, 2.4vh, 24px) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.story__step {
+  grid-area: 1 / 1;
+  color: var(--c-text);
+  font-size: clamp(20px, 2vw, 30px);
+  font-weight: var(--fw-light);
+  line-height: 1.55;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+  text-wrap: pretty;
+}
+
+.story__bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  max-width: 240px;
+  margin-top: clamp(24px, 4vh, 40px);
+}
+
+.story__bar i {
+  display: block;
+  height: 2px;
+  background:
+    linear-gradient(var(--c-point), var(--c-point)) left / var(--fill, 0%) 100% no-repeat,
+    var(--c-bg-sub);
+}
+
+/* ── 지도 ───────────────────────────────────────── */
+.story__stage { position: relative; }
+
+/* 카드의 % 위치 기준 — 범례까지 포함한 영역이 아니라 지도 상자 */
+.story__map { position: relative; }
+
+.story__map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.story__land { fill: var(--c-bg-sub); }
+
+/* 크기 변형은 js(GSAP)가 기준점까지 계산한다 — 여기서 transform-origin 을 주면 이중으로 적용돼 점이 튄다(실측) */
+.story__pt { fill: var(--story-neutral); }
+
+/* 판단이 모이면 — AI 쪽은 포인트 컬러로 은은하게 빛난다 */
+.story__pts { filter: drop-shadow(0 0 4px rgba(195, 189, 255, 0)); }
+
+/* 선택된 장소 둘레로 퍼지는 고리 — 선택 단계에서만 */
+.story__ring {
+  fill: none;
+  stroke: var(--c-point);
+  stroke-width: 1;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.story.is-picking .story__ring {
+  animation: story-ring 1.8s ease-out infinite;
+}
+.story.is-picking .story__ring + .story__ring { animation-delay: 0.9s; }
+
+@keyframes story-ring {
+  0%   { opacity: 0.9; transform: scale(1); }
+  100% { opacity: 0;   transform: scale(5); }
+}
+
+/* ── 영상 카드 (추상 프레임 → 투표 → 정답) ─────────── */
+.story__card {
+  position: absolute;
+  /* 선택된 장소(--px, --py) 오른쪽 아래에 붙는다 */
+  left: calc(var(--px, 50%) + 22px);
+  top: calc(var(--py, 30%) - 12px);
+  width: clamp(200px, 34%, 290px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 장소에서 카드로 이어지는 짧은 선 */
+.story__card::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 12px;
+  width: 16px;
+  height: 1px;
+  background-color: var(--c-point);
+}
+
+.story__frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--c-bg-sub);
+  border-radius: 10px;
+  background-color: var(--c-bg);
+}
+
+.story__noise {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.55;
+}
+
+/* 주사선 + 가장자리 어둡게 — 영상 화면처럼 */
+.story__frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(to bottom, rgba(17, 17, 17, 0.35) 0 1px, rgba(17, 17, 17, 0) 1px 3px),
+    radial-gradient(ellipse at center, rgba(17, 17, 17, 0) 55%, rgba(17, 17, 17, 0.8) 100%);
+  pointer-events: none;
+}
+
+.story__tag,
+.story__time {
+  position: absolute;
+  z-index: 1;
+  color: var(--c-text);
+  font-size: 10px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.12em;
+}
+
+.story__tag  { left: 10px; top: 8px; }
+.story__time { right: 10px; bottom: 10px; color: var(--c-text-sub); letter-spacing: 0.04em; }
+
+.story__progress {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--c-point);
+  transform-origin: left center;
+  transform: scaleX(0);
+}
+
+.story__vote {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.story__chip {
+  flex: 1;
+  padding: 7px 0;
+  border: 1px solid var(--c-bg-sub);
+  border-radius: 999px;
+  color: var(--c-text-sub);
+  font-size: 12px;
+  text-align: center;
+  opacity: 0;
+}
+
+.story__answer {
+  margin-top: 10px;
+  color: var(--c-point);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  opacity: 0;
+}
+
+/* ── 범례 ───────────────────────────────────────── */
+.story__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: clamp(14px, 2vh, 22px);
+  color: var(--c-text-sub);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  opacity: 0;
+}
+
+.story__legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.story__legend li::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.story__legend .is-real::before    { background-color: var(--story-real); }
+.story__legend .is-ai::before      { background-color: var(--story-ai); }
+.story__legend .is-neutral::before { background-color: var(--story-neutral); }
+
+/* 좁은 화면 — 지도 위, 글 아래. 카드는 지도 아래 흐름으로 */
+@media (max-width: 768px) {
+  .story__inner {
+    grid-template-columns: 1fr;
+    align-content: center;
+    gap: clamp(20px, 3vh, 32px);
+  }
+  .story__stage { order: -1; }
+  .story__card {
+    position: static;
+    width: min(260px, 70%);
+    margin: 14px auto 0;
+  }
+  .story__card::before { display: none; }
+  .story__step { font-size: clamp(18px, 5vw, 22px); }
+}
+
+/* 연출 없이 보여줄 때 — 문장 넷을 차례로, 지도는 완성된 모습, 카드는 숨김 */
+.story.is-static {
+  height: auto;
+  padding-block: clamp(24px, 4vh, 48px);
+}
+.story.is-static .story__inner { padding-top: 0; }
+.story.is-static .story__count,
+.story.is-static .story__bar,
+.story.is-static .story__card { display: none; }
+.story.is-static .story__steps { display: block; }
+.story.is-static .story__step + .story__step { margin-top: 0.6em; }
+.story.is-static .story__legend { opacity: 1; }
+.story.is-static .story__pt[data-v="real"] { fill: var(--story-real); }
+.story.is-static .story__pt[data-v="ai"]   { fill: var(--story-ai); }
+
+/* ==========================================================================
+   Works — 썸네일 그리드 (2단계에서 모달 연결)
+   ========================================================================== */
+.works__head {
+  margin-bottom: clamp(48px, 7vh, 88px);
+}
+
+.works__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(28px, 3vw, 48px) clamp(20px, 2vw, 32px);
+}
+
+.work__trigger {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.work__thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  margin: 0;
+  background-color: var(--c-bg-sub);
+  overflow: hidden;
+  outline: 1px solid transparent;
+  transition: outline-color 0.4s ease,
+              transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.work__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.45s ease;
+}
+
+/* 썸네일 반응은 영상 이미지 위에 있을 때만 — Details 에 올렸을 때는 썸네일이 가만히 있는다 */
+.work__trigger:hover .work__thumb img { opacity: 0.68; }
+
+.work__trigger:hover .work__thumb { outline-color: var(--c-point); }
+
+.work__trigger:hover + .work__info .work__title { color: var(--c-point); }
+
+/* 썸네일 아래 한 줄 — 제목과 연도는 왼쪽에 나란히, Details 는 오른쪽 끝.
+   제목 · 연도는 글자 크기가 달라 바닥선끼리 맞추고(가운데 맞춤이면 연도가 떠 보인다),
+   버튼은 따로 세로 가운데 — 버튼까지 바닥선에 넣으면 버튼 있는 카드만 제목이 3px 내려간다(실측) */
+.work__info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  /* Details 버튼 높이 — 버튼이 없는 작품도 제목이 옆 카드와 같은 높이에 선다 */
+  min-height: 29px;
+}
+
+.work__title,
+.work__meta { align-self: baseline; }
+
+.work__title {
+  min-width: 0;
+  font-size: clamp(16px, 1.4vw, 19px);
+  font-weight: var(--fw-medium);
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+  transition: color 0.35s ease;
+}
+
+.work__meta {
+  flex-shrink: 0;
+  color: var(--c-text-sub);
+  font-size: 13px;
+  font-weight: var(--fw-light);
+  letter-spacing: 0.02em;
+}
+
+/* Details — 알약 버튼. 기본은 보조 색 테두리, 호버 시 포인트 컬러 */
+.work__more {
+  position: relative;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 8px 14px 7px;
+  border: 1px solid var(--c-bg-sub);
+  border-radius: 999px;
+  background: none;
+  color: var(--c-text-sub);
+  font: inherit;
+  font-size: 12px;
+  font-weight: var(--fw-regular);
+  line-height: 1;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: color 0.35s ease, border-color 0.35s ease;
+}
+
+/* 손가락으로도 누르기 쉽게 누르는 범위만 넓힌다(보이는 크기는 그대로) */
+.work__more::after {
+  content: '';
+  position: absolute;
+  inset: -9px -6px;
+}
+
+.work__more:hover {
+  color: var(--c-point);
+  border-color: var(--c-point);
+}
+
+/* ==========================================================================
+   호버 확대
+   transition 은 기본 상태에 선언해야 마우스를 뗄 때도 같은 곡선·속도로
+   돌아온다. (:hover 에만 걸면 복귀가 즉시 끊긴다)
+   ========================================================================== */
+.header__logo,
+.nav__link {
+  /* a 의 color 전환을 유지한 채 transform 만 더한다 */
+  transition: color 0.35s ease,
+              transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* 확대 시 가장자리 계단 현상을 줄인다 */
+.header__logo,
+.nav__link,
+.work__thumb {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* 썸네일은 면적이 커 합성 레이어로 올려두는 편이 부드럽다 */
+.work__thumb { will-change: transform; }
+
+.header__logo:hover,
+.nav__link:hover,
+.work__trigger:hover .work__thumb {
+  transform: scale(1.05);
+}
+
+/* ==========================================================================
+   헤더 이동 막 — 누르면 배경색으로 잠깐 덮었다 걷는다(헤더 바로 아래 층)
+   ========================================================================== */
+/* 바로가기 주소로 들어올 때 — 옮기기 전 첫 화면을 가린다. 스크립트가 못 돌아도 3초 뒤 저절로 보인다 */
+html.is-deeplink body { visibility: hidden; animation: deeplink-failsafe 0s 3s forwards; }
+@keyframes deeplink-failsafe { to { visibility: visible; } }
+
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-header) - 1);
+  background: var(--c-bg);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   영상 모달
+   ========================================================================== */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--gutter);
+  opacity: 0;
+  visibility: hidden;
+  /* 열 때는 visibility 를 즉시 전환하고(포커스 이동 가능), 닫을 때만 페이드가 끝난 뒤 숨긴다 */
+  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+}
+
+.modal.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.35s ease, visibility 0s linear 0s;
+}
+
+.modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(17, 17, 17, 0.94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.modal__dialog {
+  position: relative;
+  width: min(1180px, 100%);
+}
+
+.modal__frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background-color: #000;
+}
+
+.modal__frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* 닫기 — 얇은 두 선으로 그린 X, 호버 시 포인트 컬러 */
+.modal__close {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 18px);
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.modal__close::before,
+.modal__close::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 26px;
+  height: 1px;
+  background-color: var(--c-text);
+  transition: background-color 0.3s ease;
+}
+
+.modal__close::before { transform: translate(-50%, -50%) rotate(45deg); }
+.modal__close::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+
+.modal__close:hover::before,
+.modal__close:hover::after { background-color: var(--c-point); }
+
+/* 글 모드(작품 상세) — 16:9 영상 틀 대신 읽기 좋은 폭의 패널, 길면 안에서 스크롤 */
+.modal.is-text .modal__dialog {
+  width: min(760px, 100%);
+}
+
+.modal.is-text .modal__frame {
+  aspect-ratio: auto;
+  max-height: calc(100vh - 2 * var(--gutter) - 56px);
+  max-height: calc(100svh - 2 * var(--gutter) - 56px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: clamp(28px, 4vw, 52px);
+  border: 1px solid var(--c-bg-sub);
+  border-radius: 20px;
+  background-color: var(--c-bg);
+}
+
+.detail__title {
+  font-size: clamp(26px, 3vw, 36px);
+  font-weight: var(--fw-bold);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+/* 사용 모델 · 길이 — 항목명은 보조 색, 값은 본문 색 */
+.detail__specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+  margin: 20px 0 0;
+  font-size: 15px;
+}
+
+.detail__specs div { display: flex; gap: 12px; }
+.detail__specs dt { color: var(--c-text-sub); }
+.detail__specs dd { margin: 0; font-weight: var(--fw-medium); }
+
+/* Prompt · Negative prompt — 섹션 라벨과 같은 모양 */
+.detail__label {
+  margin: clamp(32px, 4vw, 44px) 0 0;
+  padding-top: clamp(24px, 3vw, 32px);
+  border-top: 1px solid var(--c-line);
+  color: var(--c-point);
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.detail__text {
+  margin-top: 14px;
+  color: var(--c-text-sub);
+  font-size: clamp(15px, 1.2vw, 17px);
+  line-height: 1.8;
+  word-break: keep-all;
+  /* 유튜브 설명의 긴 주소가 창 밖으로 삐져나가지 않게 넘칠 때만 끊는다 */
+  overflow-wrap: anywhere;
+}
+
+.detail__text p + p { margin-top: 0.8em; }
+
+/* ==========================================================================
+   푸터
+   ========================================================================== */
+.footer {
+  padding-block: 40px;
+  border-top: 1px solid var(--c-line);
+}
+
+.footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
+  color: var(--c-text-sub);
+  font-size: 12px;
+  font-weight: var(--fw-light);
+  letter-spacing: 0.04em;
+}
+
+/* ==========================================================================
+   반응형
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .works__grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* 좁은 화면에서는 썸네일이 메뉴 뒤를 가로로 지나 유리 뒤 배경이 밝아진다.
+   메뉴만 한 단계 밝혀 대비를 확보한다. 데스크톱은 기존 밸런스를 그대로 둔다. */
+@media (max-width: 768px) {
+  .nav__link { color: var(--c-nav-mobile); }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --header-h: 60px;
+    --header-top: 14px;
+    --header-r: 30px;
+  }
+  /* 로고가 길어 320px 폭에서 메뉴가 안쪽 여백을 파고들지 않게 최소 간격만 줄인다 */
+  .header__inner { padding-inline: 22px; gap: 16px; }
+  .works__grid { grid-template-columns: 1fr; }
+  .nav { gap: 18px; }
+  .nav__link { font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; }
+}
+
+/* ==========================================================================
+   전시 지도로 넘어가기 (추가)
+   오프닝 뒤에는 전시 지도가 고정돼 있다. 본문(main)은 배경색으로 덮고,
+   마지막 빈 화면만 투명하게 두어 끝까지 내리면 지도가 드러난다.
+   ========================================================================== */
+#top { background-color: var(--c-bg); }
+.pf-end { height: 100vh; height: 100svh; }

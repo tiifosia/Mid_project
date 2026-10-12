@@ -3,7 +3,6 @@ import L from 'leaflet'
 import { supabase } from './supabase.js'
 import { VIDEOS } from './videos.js'
 import VideoModal from './VideoModal.jsx'
-import Intro from './Intro.jsx'
 import { addWorldLayers } from './worldLayers.js'
 
 const WORLD = [[-56, -168], [78, 190]] // 남극을 뺀 세계 전체
@@ -21,6 +20,7 @@ export default function HostView() {
   const [selected, setSelected] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const [number, setNumber] = useState('')
+  const introEl = useRef(null)
   const [intro, setIntro] = useState(true)
   const [revealed, setRevealed] = useState(false)
   const [revealing, setRevealing] = useState(false)
@@ -87,6 +87,16 @@ export default function HostView() {
     }
   }, [])
 
+  // 스크롤 오프닝(포트폴리오 Top ~ About) → 끝까지 내리면 지도가 드러난다
+  useEffect(() => {
+    import('../intro/index.js').then(({ startIntro }) =>
+      startIntro(introEl.current, () => {
+        setIntro(false)
+        reveal()
+      }),
+    )
+  }, [])
+
   // 전체 영상 상태 로드 + 실시간 구독 (투표 수, 판정)
   useEffect(() => {
     supabase
@@ -118,48 +128,51 @@ export default function HostView() {
   }
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-background">
-      <div
-        className={`absolute transition-[filter] ${selected || !revealed ? 'pointer-events-none blur-xl' : ''} ${revealed ? 'is-revealed' : ''}`}
-        style={{
-          inset: -BLEED,
-          transitionDuration: `${revealing ? REVEAL_SECONDS : FLY_SECONDS}s`,
-          // 줌인: 출발과 함께 빠르게 흐려짐 / 줌아웃: 날아가는 동안 흐림을 유지하다 도착하며 선명해짐
-          transitionTimingFunction: selected ? 'cubic-bezier(0.16, 1, 0.3, 1)' : 'cubic-bezier(0.7, 0, 0.84, 0)',
-        }}
-      >
-        <div ref={mapEl} className="h-full w-full bg-background" />
-        {/* 가장자리를 배경색으로 가라앉히는 비네트 (지도 면 위, 마커 아래) — 보이는 화면 기준 */}
+    <>
+      {/* 지도 화면은 고정해 두고, 오프닝이 그 위에서 스크롤된다 */}
+      <div className="fixed inset-0 z-0 overflow-hidden bg-background">
         <div
-          className="pointer-events-none absolute z-[450] bg-[radial-gradient(ellipse_at_center,transparent_55%,#111111_100%)]"
-          style={{ inset: BLEED }}
-        />
-      </div>
+          className={`absolute transition-[filter] ${selected || !revealed ? 'pointer-events-none blur-xl' : ''} ${revealed ? 'is-revealed' : ''}`}
+          style={{
+            inset: -BLEED,
+            transitionDuration: `${revealing ? REVEAL_SECONDS : FLY_SECONDS}s`,
+            // 줌인: 출발과 함께 빠르게 흐려짐 / 줌아웃: 날아가는 동안 흐림을 유지하다 도착하며 선명해짐
+            transitionTimingFunction: selected ? 'cubic-bezier(0.16, 1, 0.3, 1)' : 'cubic-bezier(0.7, 0, 0.84, 0)',
+          }}
+        >
+          <div ref={mapEl} className="h-full w-full bg-background" />
+          {/* 가장자리를 배경색으로 가라앉히는 비네트 (지도 면 위, 마커 아래) — 보이는 화면 기준 */}
+          <div
+            className="pointer-events-none absolute z-[450] bg-[radial-gradient(ellipse_at_center,transparent_55%,#111111_100%)]"
+            style={{ inset: BLEED }}
+          />
+        </div>
 
-      {/* 번호로 지점 이동 */}
-      <form
-        onSubmit={submitNumber}
-        className={`glass absolute left-1/2 top-6 z-[1000] flex -translate-x-1/2 items-center gap-3 rounded-full px-5 py-2 transition-opacity duration-500 ${selected || !revealed || revealing ? 'pointer-events-none opacity-0' : ''}`}
-      >
-        <span className="text-xs tracking-[0.3em] text-text-secondary">NO.</span>
-        <input
-          value={number}
-          onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))}
-          inputMode="numeric"
-          className="w-14 bg-transparent text-center text-text-primary outline-none"
-        />
-      </form>
+        {/* 번호로 지점 이동 */}
+        <form
+          onSubmit={submitNumber}
+          className={`glass absolute left-1/2 top-6 z-[1000] flex -translate-x-1/2 items-center gap-3 rounded-full px-5 py-2 transition-opacity duration-500 ${selected || !revealed || revealing ? 'pointer-events-none opacity-0' : ''}`}
+        >
+          <span className="text-xs tracking-[0.3em] text-text-secondary">NO.</span>
+          <input
+            value={number}
+            onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))}
+            inputMode="numeric"
+            className="w-14 bg-transparent text-center text-text-primary outline-none"
+          />
+        </form>
 
-      {/* 모달을 열기 전에 영상을 미리 받아 두어 즉시 재생되게 한다 */}
-      <div hidden>
-        {VIDEOS.map(({ id }) => (
-          <video key={id} src={`${import.meta.env.BASE_URL}videos/${id}.mp4`} preload="auto" muted />
-        ))}
+        {/* 모달을 열기 전에 영상을 미리 받아 두어 즉시 재생되게 한다 */}
+        <div hidden>
+          {VIDEOS.map(({ id }) => (
+            <video key={id} src={`${import.meta.env.BASE_URL}videos/${id}.mp4`} preload="auto" muted />
+          ))}
+        </div>
+        {showModal && selected && (
+          <VideoModal id={selected} row={rows[selected]} onClose={close} onDecide={(choice) => decide(selected, choice)} />
+        )}
       </div>
-      {intro && <Intro onReveal={reveal} onDone={() => setIntro(false)} />}
-      {showModal && selected && (
-        <VideoModal id={selected} row={rows[selected]} onClose={close} onDecide={(choice) => decide(selected, choice)} />
-      )}
-    </div>
+      {intro && <div ref={introEl} className="relative z-10" />}
+    </>
   )
 }
