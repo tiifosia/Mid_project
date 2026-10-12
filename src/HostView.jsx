@@ -7,6 +7,9 @@ import Intro from './Intro.jsx'
 import { addWorldLayers } from './worldLayers.js'
 
 const WORLD = [[-56, -168], [78, 190]] // 남극을 뺀 세계 전체
+// 지도를 화면보다 사방 BLEED 만큼 크게 깔아, 블러가 화면 가장자리에서도 바깥 내용까지 섞어 고르게 흐려지게 한다
+const BLEED = 64
+const FIT = { padding: [BLEED, BLEED] }
 const FLY_SECONDS = 0.6
 const REVEAL_SECONDS = 1.4 // 오프닝 뒤 세계 전체로 물러나며 선명해지는 시간
 
@@ -26,7 +29,7 @@ export default function HostView() {
   const reveal = () => {
     setRevealed(true)
     setRevealing(true)
-    mapRef.current.flyToBounds(WORLD, { duration: REVEAL_SECONDS, easeLinearity: 0.2 })
+    mapRef.current.flyToBounds(WORLD, { ...FIT, duration: REVEAL_SECONDS, easeLinearity: 0.2 })
     setTimeout(() => setRevealing(false), REVEAL_SECONDS * 1000)
   }
 
@@ -41,7 +44,7 @@ export default function HostView() {
   const close = () => {
     setShowModal(false)
     setSelected(null)
-    mapRef.current.flyToBounds(WORLD, { duration: FLY_SECONDS, easeLinearity: 0.2 })
+    mapRef.current.flyToBounds(WORLD, { ...FIT, duration: FLY_SECONDS, easeLinearity: 0.2 })
   }
 
   // 호스트 판정: 투표 마감 + 판정 저장, 팝업은 바로 닫는다
@@ -56,13 +59,12 @@ export default function HostView() {
     const map = L.map(mapEl.current, {
       zoomControl: false,
       attributionControl: false,
-      preferCanvas: true, // 지도 선·면을 SVG 대신 캔버스 하나에 그려 드래그·블러를 가볍게
       zoomSnap: 0.25,
       maxBounds: [[-80, -190], [85, 200]],
       maxBoundsViscosity: 1,
     })
     mapRef.current = map
-    map.fitBounds(WORLD)
+    map.fitBounds(WORLD, FIT)
     map.setMinZoom(map.getZoom())
     map.setZoom(map.getZoom() + 1.5, { animate: false }) // 오프닝 동안은 가까이 당겨 둔다
 
@@ -118,16 +120,20 @@ export default function HostView() {
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-background">
       <div
-        className={`relative h-full w-full transition-[filter] ${selected || !revealed ? 'pointer-events-none blur-xl' : ''} ${revealed ? 'is-revealed' : ''}`}
+        className={`absolute transition-[filter] ${selected || !revealed ? 'pointer-events-none blur-xl' : ''} ${revealed ? 'is-revealed' : ''}`}
         style={{
+          inset: -BLEED,
           transitionDuration: `${revealing ? REVEAL_SECONDS : FLY_SECONDS}s`,
           // 줌인: 출발과 함께 빠르게 흐려짐 / 줌아웃: 날아가는 동안 흐림을 유지하다 도착하며 선명해짐
           transitionTimingFunction: selected ? 'cubic-bezier(0.16, 1, 0.3, 1)' : 'cubic-bezier(0.7, 0, 0.84, 0)',
         }}
       >
         <div ref={mapEl} className="h-full w-full bg-background" />
-        {/* 가장자리를 배경색으로 가라앉히는 비네트 (지도 면 위, 마커 아래) */}
-        <div className="pointer-events-none absolute inset-0 z-[450] bg-[radial-gradient(ellipse_at_center,transparent_55%,#111111_100%)]" />
+        {/* 가장자리를 배경색으로 가라앉히는 비네트 (지도 면 위, 마커 아래) — 보이는 화면 기준 */}
+        <div
+          className="pointer-events-none absolute z-[450] bg-[radial-gradient(ellipse_at_center,transparent_55%,#111111_100%)]"
+          style={{ inset: BLEED }}
+        />
       </div>
 
       {/* 번호로 지점 이동 */}
