@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 
 const QUESTION = '우리는 무엇을 근거로 세계를 실제라고 믿는가?'
-const TITLE_MS = 2800 // 제목을 보여 주는 시간
+const TITLE_MS = 3400 // 제목(+ 서명)을 보여 주는 시간
+const SIGN_DELAY_MS = 900 // 제목이 떠오른 뒤 서명이 써지기 시작
 const TYPE_DELAY_MS = 500 // 제목이 물러난 뒤 타이핑 시작까지
 const CHAR_MS = 75 // 한 글자당
 const HOLD_MS = 1400 // 다 쓴 문장을 머금는 시간
@@ -12,6 +13,7 @@ export default function Intro({ onReveal, onDone }) {
   const [phase, setPhase] = useState('title') // title → question → out
   const [typed, setTyped] = useState(0)
   const finished = useRef(false)
+  const signature = useRef(null)
 
   const finish = () => {
     if (finished.current) return
@@ -23,7 +25,11 @@ export default function Intro({ onReveal, onDone }) {
 
   useEffect(() => {
     const total = TITLE_MS + TYPE_DELAY_MS + QUESTION.length * CHAR_MS + HOLD_MS
-    const timers = [setTimeout(() => setPhase('question'), TITLE_MS), setTimeout(finish, total)]
+    const timers = [
+      setTimeout(() => signature.current?.play().catch(() => {}), SIGN_DELAY_MS),
+      setTimeout(() => setPhase('question'), TITLE_MS),
+      setTimeout(finish, total),
+    ]
     window.addEventListener('keydown', finish)
     return () => {
       timers.forEach(clearTimeout)
@@ -49,16 +55,29 @@ export default function Intro({ onReveal, onDone }) {
       className={`intro fixed inset-0 z-[3000] grid cursor-pointer place-items-center bg-background px-8 transition-opacity ${phase === 'out' ? 'pointer-events-none opacity-0' : ''}`}
       style={{ transitionDuration: `${FADE_MS}ms` }}
     >
-      <div className={`intro-title [grid-area:1/1] ${phase !== 'title' ? 'is-gone' : ''}`}>
-        <h1 className="intro-line text-[clamp(44px,8.5vw,132px)] font-extrabold leading-[1.04] tracking-[-0.045em]">
-          Generated World<span className="text-accent">,</span>
-        </h1>
-        <p
-          className="intro-line text-[clamp(30px,5.7vw,89px)] font-light leading-[1.04] tracking-[-0.045em] text-text-secondary"
-          style={{ animationDelay: '0.25s' }}
-        >
-          What remains of truth<span className="text-accent">?</span>
-        </p>
+      {/* 서명은 제목 상자 밖에 둔다: 상자의 투명도·블러가 서명의 screen 합성을 풀어 검은 바탕이 드러나기 때문 */}
+      <div className="relative [grid-area:1/1] mb-[12vh]">
+        <div className={`intro-title ${phase !== 'title' ? 'is-gone' : ''}`}>
+          <h1 className="intro-line text-[clamp(44px,8.5vw,132px)] font-extrabold leading-[1.04] tracking-[-0.045em]">
+            Generated World<span className="text-accent">,</span>
+          </h1>
+          <p
+            className="intro-line text-[clamp(30px,5.7vw,89px)] font-light leading-[1.04] tracking-[-0.045em] text-text-secondary"
+            style={{ animationDelay: '0.25s' }}
+          >
+            What remains of truth<span className="text-accent">?</span>
+          </p>
+        </div>
+        {/* 한 번 써지고 마지막 프레임에서 멈춘다 (loop 없음) */}
+        <video
+          ref={signature}
+          src={`${import.meta.env.BASE_URL}signature.mp4`}
+          muted
+          playsInline
+          preload="auto"
+          aria-label="서명"
+          className={`absolute right-[4%] top-full mt-[2vh] w-[clamp(180px,19vw,300px)] mix-blend-screen transition-opacity duration-500 ${phase !== 'title' ? 'opacity-0' : ''}`}
+        />
       </div>
 
       {phase !== 'title' && (
