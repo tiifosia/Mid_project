@@ -25,6 +25,7 @@ export async function startIntro(container, { onStart, onDone }) {
   const total = nav.querySelector('.pf-nav__total')
   const label = nav.querySelector('.pf-nav__label')
   const next = nav.querySelector('.pf-nav__next')
+  const prev = nav.querySelector('.pf-nav__prev')
   const pad = (n) => String(n).padStart(2, '0')
 
   // 멈출 자리(스크롤 위치) — 레이아웃이 바뀌어도 맞도록 누를 때마다 ScrollTrigger 에서 다시 계산한다
@@ -42,8 +43,9 @@ export async function startIntro(container, { onStart, onDone }) {
     if (hero) ys.push(hero.start + (hero.end - hero.start) * (3.0 / 3.2))
     // 2. About 문단의 단어가 다 밝아진 자리
     if (lead) ys.push(lead.end)
-    // 3~6. 스토리 네 단계가 각각 끝난 자리 (고정 구간에서 화면 높이 1 = 한 단계)
-    if (story) for (let k = 0; k < 4; k++) ys.push(story.start + (k + 0.95) * vh)
+    // 3~6. 스토리 네 단계가 각각 끝난 자리 (고정 구간에서 화면 높이 1 = 한 단계).
+    //      1~3단계 문장은 다음 단계로 넘어가기 직전(0.88)부터 흐려지므로 그 앞(0.87)에서 멈춘다. 4단계는 뒤가 없어 0.95.
+    if (story) for (let k = 0; k < 4; k++) ys.push(story.start + (k + (k < 3 ? 0.87 : 0.95)) * vh)
     // 7. Members 가 화면 가운데보다 살짝 위(42%)에 오는 자리 — 위쪽 스토리 범례가 걸리지 않게
     const top = members.getBoundingClientRect().top + window.scrollY
     const bottom = list.getBoundingClientRect().bottom + window.scrollY
@@ -60,18 +62,16 @@ export async function startIntro(container, { onStart, onDone }) {
     const last = i >= ys.length
     nav.classList.toggle('is-last', last)
     label.textContent = last ? '시작하기' : 'NEXT'
+    prev.disabled = i <= 1
   }
   render()
 
-  // 다음 자리까지 부드럽게 내려간다 — 스크롤 연동 연출(타이핑 · 점 지도)은 그 사이 그대로 재생된다
+  // 다음(이전) 자리까지 부드럽게 움직인다 — 스크롤 연동 연출(타이핑 · 점 지도)은 그 사이 그대로(거꾸로) 재생된다
   let moving = false
-  const advance = () => {
-    const ys = stops()
-    const to = ys.find((y) => y > window.scrollY + 4)
-    if (to === undefined) return leave()
+  const moveTo = (to) => {
     moving = true
     const p = { y: window.scrollY }
-    const dist = (to - p.y) / window.innerHeight
+    const dist = Math.abs(to - p.y) / window.innerHeight
     gsap.to(p, {
       y: to,
       duration: Math.min(3.4, Math.max(1.2, dist * 0.9)),
@@ -103,15 +103,28 @@ export async function startIntro(container, { onStart, onDone }) {
     }, LEAVE_MS)
   }
 
-  const go = () => {
-    if (!moving && !leaving) advance()
+  const forward = () => {
+    if (moving || leaving) return
+    const to = stops().find((y) => y > window.scrollY + 4)
+    if (to === undefined) leave()
+    else moveTo(to)
   }
-  next.addEventListener('click', go)
-  // 키보드로도 진행 (Enter · Space · → · ↓ · PageDown)
+  const back = () => {
+    if (moving || leaving) return
+    const to = stops().filter((y) => y < window.scrollY - 4).pop()
+    if (to !== undefined) moveTo(to)
+  }
+  next.addEventListener('click', forward)
+  prev.addEventListener('click', back)
+  // 키보드로도 진행 — 앞으로: Enter · Space · → · ↓ · PageDown / 뒤로: ← · ↑ · PageUp
   const onKey = (e) => {
-    if (!/^(Enter| |ArrowRight|ArrowDown|PageDown)$/.test(e.key)) return
+    const fwd = /^(Enter| |ArrowRight|ArrowDown|PageDown)$/.test(e.key)
+    const bwd = /^(ArrowLeft|ArrowUp|PageUp)$/.test(e.key)
+    if (!fwd && !bwd) return
     e.preventDefault()
-    if (!e.repeat) go()
+    if (e.repeat) return
+    if (fwd) forward()
+    else back()
   }
   window.addEventListener('keydown', onKey)
 }
