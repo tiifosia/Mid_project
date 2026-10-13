@@ -5,6 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import './style.css'
 import markup from './markup.html?raw'
 
+const NAV_ROOM = 104 // 하단 진행 캡슐 자리 (style.css 의 --nav-room 과 같게)
 const LEAVE_MS = 1000 // 오프닝이 흐려지며 걷히는 시간 (style.css 의 .pf-leaving 과 같게)
 
 // onStart: 시작하기를 누른 순간(지도 펼치기 시작) / onDone: 오프닝이 다 걷힌 뒤(제거)
@@ -16,6 +17,15 @@ export async function startIntro(container, { onStart, onDone }) {
   window.ScrollTrigger = ScrollTrigger
   await import('./world-dots.js')
   await import('./main.js')
+
+  // 첫 화면 캡션은 제목과 함께 물러난다 (히어로 고정 구간의 처음 0.48 화면 동안)
+  gsap.fromTo(container.querySelector('.hero__caption'), { opacity: 1, y: 0 }, {
+    opacity: 0,
+    y: -40,
+    ease: 'power1.in',
+    // 히어로는 맨 위에 고정돼 있으므로 스크롤 위치로 직접 준다(고정된 요소를 기준으로 잡으면 고정 구간만큼 뒤로 밀린다)
+    scrollTrigger: { start: 0, end: () => window.innerHeight * 0.48, scrub: true },
+  })
 
   // 직접 스크롤은 잠그고 하단 NEXT 로만 한 단계씩 진행한다
   window.pageScroll?.lock(true)
@@ -41,8 +51,13 @@ export async function startIntro(container, { onStart, onDone }) {
     const ys = [0]
     // 1. 질문을 다 쓴 자리 (히어로 고정 구간 3.2 중 3.0)
     if (hero) ys.push(hero.start + (hero.end - hero.start) * (3.0 / 3.2))
-    // 2. About 문단의 단어가 다 밝아진 자리
-    if (lead) ys.push(lead.end)
+    // 2. About 이 캡슐 위 공간의 가운데에 오는 자리 (문단 단어가 다 밝아진 뒤여야 하므로 그보다 앞서지 않게)
+    const head = container.querySelector('.about__head')
+    if (head) {
+      const r = head.getBoundingClientRect()
+      const center = r.top + window.scrollY + r.height / 2 - (vh - NAV_ROOM) / 2
+      ys.push(lead ? Math.max(center, lead.end) : center)
+    }
     // 3~6. 스토리 네 단계가 각각 끝난 자리 (고정 구간에서 화면 높이 1 = 한 단계).
     //      1~3단계 문장은 다음 단계로 넘어가기 직전(0.88)부터 흐려지므로 그 앞(0.87)에서 멈춘다. 4단계는 뒤가 없어 0.95.
     if (story) for (let k = 0; k < 4; k++) ys.push(story.start + (k + (k < 3 ? 0.87 : 0.95)) * vh)
