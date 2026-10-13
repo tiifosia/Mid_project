@@ -1,5 +1,6 @@
 /* 포트폴리오(tiifosia/portfolio) js/main.js 를 그대로 옮겼다.
-   Works 섹션이 없으므로 썸네일 폴백과 영상 모달 블록만 뺐다(모달은 요소가 없으면 오류가 난다). */
+   Works 섹션이 없으므로 썸네일 폴백과 영상 모달 블록만 뺐다(모달은 요소가 없으면 오류가 난다).
+   전시판에서 바꾼 값은 About 문단 밝아짐 끝 지점 하나(bottom 45% → 65%). */
 /**
  * 새로고침하면 항상 첫 화면 맨 위에서 시작한다.
  * 브라우저의 스크롤 위치 복원을 끄고, 주소의 #about 같은 앵커도 지운다
@@ -513,7 +514,7 @@ function hangulSteps(text) {
     });
     gsap.fromTo(words, { opacity: 0.2 }, {
       opacity: 1, ease: 'none', stagger: 0.1,
-      scrollTrigger: { trigger: lead, start: 'top 85%', end: 'bottom 45%', scrub: true }
+      scrollTrigger: { trigger: lead, start: 'top 85%', end: 'bottom 65%', scrub: true }  /* 전시판: 45% → 65% — NEXT 로 멈췄을 때 아래 스토리가 비치지 않게 */
     });
   }
 

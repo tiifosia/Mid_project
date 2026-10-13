@@ -17,12 +17,82 @@ export async function startIntro(container, { onStart, onDone }) {
   await import('./world-dots.js')
   await import('./main.js')
 
+  // 직접 스크롤은 잠그고 하단 NEXT 로만 한 단계씩 진행한다
+  window.pageScroll?.lock(true)
+
+  const nav = container.querySelector('.pf-nav')
+  const now = nav.querySelector('.pf-nav__now')
+  const total = nav.querySelector('.pf-nav__total')
+  const label = nav.querySelector('.pf-nav__label')
+  const next = nav.querySelector('.pf-nav__next')
+  const pad = (n) => String(n).padStart(2, '0')
+
+  // 멈출 자리(스크롤 위치) — 레이아웃이 바뀌어도 맞도록 누를 때마다 ScrollTrigger 에서 다시 계산한다
+  const stops = () => {
+    const vh = window.innerHeight
+    const max = ScrollTrigger.maxScroll(window)
+    const all = ScrollTrigger.getAll()
+    const hero = all.find((t) => t.pin === container.querySelector('.hero'))
+    const lead = all.find((t) => t.trigger === container.querySelector('.about__lead'))
+    const story = all.find((t) => t.pin === container.querySelector('.story'))
+    const members = container.querySelector('.about__title--next')
+    const list = container.querySelector('.about__members')
+    const ys = [0]
+    // 1. 질문을 다 쓴 자리 (히어로 고정 구간 3.2 중 3.0)
+    if (hero) ys.push(hero.start + (hero.end - hero.start) * (3.0 / 3.2))
+    // 2. About 문단의 단어가 다 밝아진 자리
+    if (lead) ys.push(lead.end)
+    // 3~6. 스토리 네 단계가 각각 끝난 자리 (고정 구간에서 화면 높이 1 = 한 단계)
+    if (story) for (let k = 0; k < 4; k++) ys.push(story.start + (k + 0.95) * vh)
+    // 7. Members 가 화면 가운데보다 살짝 위(42%)에 오는 자리 — 위쪽 스토리 범례가 걸리지 않게
+    const top = members.getBoundingClientRect().top + window.scrollY
+    const bottom = list.getBoundingClientRect().bottom + window.scrollY
+    ys.push((top + bottom) / 2 - vh * 0.42)
+    return ys.map((y) => Math.round(Math.min(Math.max(y, 0), max)))
+  }
+
+  const step = () => stops().filter((y) => y <= window.scrollY + 4).length // 1부터
+  const render = () => {
+    const ys = stops()
+    const i = step()
+    now.textContent = pad(i)
+    total.textContent = pad(ys.length)
+    const last = i >= ys.length
+    nav.classList.toggle('is-last', last)
+    label.textContent = last ? '시작하기' : 'NEXT'
+  }
+  render()
+
+  // 다음 자리까지 부드럽게 내려간다 — 스크롤 연동 연출(타이핑 · 점 지도)은 그 사이 그대로 재생된다
+  let moving = false
+  const advance = () => {
+    const ys = stops()
+    const to = ys.find((y) => y > window.scrollY + 4)
+    if (to === undefined) return leave()
+    moving = true
+    const p = { y: window.scrollY }
+    const dist = (to - p.y) / window.innerHeight
+    gsap.to(p, {
+      y: to,
+      duration: Math.min(3.4, Math.max(1.2, dist * 0.9)),
+      ease: 'power1.inOut',
+      onUpdate: () => {
+        window.scrollTo(0, p.y)
+        ScrollTrigger.update()
+      },
+      onComplete: () => {
+        moving = false
+        render()
+      },
+    })
+  }
+
   // 시작하기 — 오프닝이 흐려지며 걷히는 동안 뒤에 고정된 지도가 줌아웃하며 펼쳐진다.
   // 다 걷힌 뒤 스크롤 연출을 해제하고 오프닝을 지운다(그때 화면에는 지도만 보이므로 튀지 않는다).
-  const start = container.querySelector('.pf-start')
-  start.addEventListener('click', () => {
-    start.disabled = true
-    window.pageScroll?.lock(true)
+  let leaving = false
+  const leave = () => {
+    leaving = true
+    window.removeEventListener('keydown', onKey)
     container.classList.add('pf-leaving')
     onStart()
     setTimeout(() => {
@@ -31,5 +101,17 @@ export async function startIntro(container, { onStart, onDone }) {
       window.pageScroll?.lock(false)
       onDone()
     }, LEAVE_MS)
-  })
+  }
+
+  const go = () => {
+    if (!moving && !leaving) advance()
+  }
+  next.addEventListener('click', go)
+  // 키보드로도 진행 (Enter · Space · → · ↓ · PageDown)
+  const onKey = (e) => {
+    if (!/^(Enter| |ArrowRight|ArrowDown|PageDown)$/.test(e.key)) return
+    e.preventDefault()
+    if (!e.repeat) go()
+  }
+  window.addEventListener('keydown', onKey)
 }
