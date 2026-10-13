@@ -59,8 +59,9 @@ export async function startIntro(container, { onStart, onDone }) {
       ys.push(lead ? Math.max(center, lead.end) : center)
     }
     // 3~6. 스토리 네 단계가 각각 끝난 자리 (고정 구간에서 화면 높이 1 = 한 단계).
-    //      1~3단계 문장은 다음 단계로 넘어가기 직전(0.88)부터 흐려지므로 그 앞(0.87)에서 멈춘다. 4단계는 뒤가 없어 0.95.
-    if (story) for (let k = 0; k < 4; k++) ys.push(story.start + (k + (k < 3 ? 0.87 : 0.95)) * vh)
+    //      1~3단계 문장은 다음 단계로 넘어가기 직전(0.88)부터 흐려지므로 그 앞(0.87)에서 멈춘다.
+    //      4단계는 고정이 끝나는 자리(1.0) — 덜 가서 멈추면 Members 로 갈 때 처음 잠깐 화면이 안 움직이다 출발해 끊겨 보인다.
+    if (story) for (let k = 0; k < 4; k++) ys.push(story.start + (k + (k < 3 ? 0.87 : 1)) * vh)
     // 7. Members 가 화면 가운데보다 살짝 위(42%)에 오는 자리 — 위쪽 스토리 범례가 걸리지 않게
     const top = members.getBoundingClientRect().top + window.scrollY
     const bottom = list.getBoundingClientRect().bottom + window.scrollY

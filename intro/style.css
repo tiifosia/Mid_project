@@ -1271,11 +1271,9 @@ html.is-deeplink body { visibility: hidden; animation: deeplink-failsafe 0s 3s f
 
 /* ==========================================================================
    전시 지도로 넘어가기 (추가)
-   오프닝 뒤에는 전시 지도가 고정돼 있다. 본문(main)을 배경색으로 덮어 두고,
+   오프닝 뒤에는 전시 지도가 고정돼 있다. 오프닝 바탕(필름 그레인)으로 지도를 덮어 두고,
    직접 스크롤 대신 하단 NEXT 로 한 단계씩 진행하고, 마지막 시작하기를 누르면 본문이 흐려지며 걷히고 그 뒤의 지도가 펼쳐진다.
    ========================================================================== */
-#top { background-color: var(--c-bg); }
-
 /* 헤더를 뺀 전시판의 세로 균형 — 헤더 자리만큼 위를 비워 두던 여백을 없애고,
    대신 하단 진행 캡슐 자리만큼 아래를 비워 내용이 캡슐 위 공간의 가운데에 오게 한다 */
 :root { --header-h: 0px; --header-top: 0px; --nav-room: 104px; }
@@ -1351,24 +1349,25 @@ html.is-deeplink body { visibility: hidden; animation: deeplink-failsafe 0s 3s f
   text-transform: uppercase;
 }
 
-/* 필름 그레인 — 밝고 어두운 점이 섞인 노이즈를 overlay 로 얹어 질감만 더하고 전체 밝기는 그대로 둔다.
-   초당 8번 옮겨 지글거리게 (진행 캡슐 아래 층) */
+/* 필름 그레인 — 본문 뒤에 깔린 바탕 자체를 고운 노이즈로 (평균 밝기는 배경색 #111 그대로).
+   본문 위에 overlay 로 섞어 얹던 방식은 화면이 움직일 때마다 아래 화면 전체를 다시 섞어 끊겼다.
+   바탕이라 섞을 것이 없고, 초당 8번 옮겨 지글거리는 것도 그 층만 옮기면 된다. */
+#top { background-color: transparent; }
 .pf-grain {
   position: fixed;
-  inset: -50%;
-  z-index: 40;
+  inset: -96px; /* 흔들리는 폭만큼만 크게 */
+  z-index: -1; /* 오프닝 안에서 맨 뒤 — 그 뒤의 지도는 이 바탕이 가린다 */
   pointer-events: none;
-  opacity: 0.45;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='1' intercept='-0.25'/%3E%3CfeFuncG type='linear' slope='1' intercept='-0.25'/%3E%3CfeFuncB type='linear' slope='1' intercept='-0.25'/%3E%3CfeFuncA type='linear' slope='0' intercept='1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-color: var(--c-bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.075' intercept='0.034'/%3E%3CfeFuncG type='linear' slope='0.075' intercept='0.034'/%3E%3CfeFuncB type='linear' slope='0.075' intercept='0.034'/%3E%3CfeFuncA type='linear' slope='0' intercept='1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   animation: pf-grain 1s steps(8) infinite;
 }
 @keyframes pf-grain {
   0% { transform: translate(0, 0); }
-  25% { transform: translate(-6%, 4%); }
-  50% { transform: translate(5%, -7%); }
-  75% { transform: translate(-3%, -5%); }
-  100% { transform: translate(7%, 6%); }
+  25% { transform: translate(-61px, 43px); }
+  50% { transform: translate(53px, -71px); }
+  75% { transform: translate(-31px, -53px); }
+  100% { transform: translate(73px, 61px); }
 }
 
 /* 진행 버튼 — 화면 아래 가운데 캡슐: ↑ PREV | 01 / 08 | NEXT ↓ → 마지막엔 NEXT 자리가 시작하기 → */
