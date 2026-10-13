@@ -1,6 +1,7 @@
 /* 포트폴리오(tiifosia/portfolio) js/main.js 를 그대로 옮겼다.
    Works 섹션이 없으므로 썸네일 폴백과 영상 모달 블록만 뺐다(모달은 요소가 없으면 오류가 난다).
-   전시판에서 바꾼 값은 About 문단 밝아짐 끝 지점 하나(bottom 45% → 65%). */
+   전시판에서 바꾼 값(NEXT 로 멈췄을 때 화면이 완성돼 보이게):
+   About 문단 밝아짐 끝 지점(bottom 45% → 65%), 스토리 진행 막대(한 단계 1 → 0.85), 영상 카드 진행(1.25~1.95 → 1.2~1.8). */
 /**
  * 새로고침하면 항상 첫 화면 맨 위에서 시작한다.
  * 브라우저의 스크롤 위치 복원을 끄고, 주소의 #about 같은 앵커도 지운다
@@ -539,7 +540,7 @@ function hangulSteps(text) {
     gsap.set(pts, { scale: 0, transformOrigin: '50% 50%' });
 
     /* 진행 막대 한 칸을 채우는 트윈 설정 (매번 새 객체) */
-    var fill = function () { return { '--fill': '100%', duration: 1, ease: 'none' }; };
+    var fill = function () { return { '--fill': '100%', duration: 0.85, ease: 'none' }; };  /* 전시판: 1 → 0.85 — NEXT 가 멈추는 자리(0.87)에서 막대가 꽉 차 있게 */
     var video = { t: 0 };
     var active = -1;
 
@@ -587,10 +588,10 @@ function hangulSteps(text) {
     seq.to(others, { opacity: 0.3, duration: 0.15 }, 1)
       .to(pick, { scale: 2.2, duration: 0.15, ease: 'power2.out' }, 1)
       .fromTo(card, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.15, ease: 'power2.out' }, 1.1)
-      .fromTo(progressBar, { scaleX: 0 }, { scaleX: 1, duration: 0.7 }, 1.25)
-      .fromTo(video, { t: 0 }, { t: 8, duration: 0.7, onUpdate: function () {
+      .fromTo(progressBar, { scaleX: 0 }, { scaleX: 1, duration: 0.6 }, 1.2)  /* 전시판: 1.25~1.95 → 1.2~1.8 */
+      .fromTo(video, { t: 0 }, { t: 8, duration: 0.6, onUpdate: function () {
         timeEl.textContent = '00:0' + Math.min(8, Math.floor(video.t)) + ' / 00:08';
-      } }, 1.25)
+      } }, 1.2)
       .fromTo(barEls[1], { '--fill': '0%' }, fill(), 1);
 
     /* 3. 투표하고 정답 확인 (2 → 3) */
