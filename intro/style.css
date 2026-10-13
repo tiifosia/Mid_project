@@ -1431,17 +1431,34 @@ html.is-deeplink body { visibility: hidden; animation: deeplink-failsafe 0s 3s f
 .pf-nav__next:hover svg { transform: translateY(2px); }
 
 /* 마지막 단계 — 시작하기: 포인트 컬러가 은은하게 숨 쉰다 */
-.pf-nav.is-last {
-  border-color: rgba(195, 189, 255, 0.45);
+.pf-nav.is-last { border-color: rgba(195, 189, 255, 0.45); }
+/* 빛 번짐은 따로 그려 두고 투명도만 움직인다 — 그림자 자체를 움직이면 매 프레임 캡슐(배경 흐림 포함)을 다시 그려 화면이 끊긴다 */
+.pf-nav::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: 0 0 36px rgba(195, 189, 255, 0.3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s;
+}
+.pf-nav.is-last::after {
+  opacity: 0.4;
   animation: pf-breathe 2.8s ease-in-out infinite;
 }
 .pf-nav.is-last .pf-nav__next { color: var(--c-point); }
 .pf-nav.is-last .pf-nav__next svg { transform: rotate(-90deg); }
 .pf-nav.is-last .pf-nav__next:hover svg { transform: rotate(-90deg) translateY(2px); }
 @keyframes pf-breathe {
-  0%, 100% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 30px rgba(0, 0, 0, 0.35), 0 0 18px rgba(195, 189, 255, 0.12); }
-  50% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 30px rgba(0, 0, 0, 0.35), 0 0 36px rgba(195, 189, 255, 0.3); }
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }
+
+/* 스토리 → Members 로 넘어갈 때 끊기지 않게 — 고정이 풀리는 스토리와 떠오르는 크레딧을 미리 따로 된 층으로 둔다
+   (그러지 않으면 고정이 풀리는 순간 스토리 전체를, 떠오르는 동안 페이지를 매 프레임 다시 그린다) */
+.story,
+.credits [data-reveal] { will-change: transform; }
 
 /* 걷히는 동안 — 본문은 흐려지며, 헤더까지 함께 사라진다.
    흐림(filter)은 본문(#top)에만 건다. 헤더를 품은 바깥 상자에 걸면 고정(fixed) 헤더의 기준이 바뀌어 튄다. */
