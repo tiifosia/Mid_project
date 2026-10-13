@@ -1278,7 +1278,7 @@ html.is-deeplink body { visibility: hidden; animation: deeplink-failsafe 0s 3s f
 
 .pf-tail { height: 40vh; height: 40svh; }
 
-/* 진행 버튼 — 화면 아래 가운데 캡슐: 01 / 08 | NEXT ↓ → 마지막엔 08 / 08 | 시작하기 → */
+/* 진행 버튼 — 화면 아래 가운데 캡슐: ↑ PREV | 01 / 08 | NEXT ↓ → 마지막엔 NEXT 자리가 시작하기 → */
 .pf-nav {
   position: fixed;
   left: 50%;
@@ -1300,12 +1300,13 @@ html.is-deeplink body { visibility: hidden; animation: deeplink-failsafe 0s 3s f
   transition: border-color 0.6s, box-shadow 0.6s;
 }
 .pf-nav__count {
-  padding: 0 20px 0 26px;
+  padding: 0 20px;
   color: var(--c-text-sub);
   font-variant-numeric: tabular-nums;
 }
 .pf-nav__now { color: var(--c-text); font-weight: var(--fw-medium); }
 .pf-nav__sep { width: 1px; height: 16px; background: rgba(245, 245, 245, 0.1); }
+.pf-nav__prev,
 .pf-nav__next {
   display: flex;
   align-items: center;
@@ -1321,9 +1322,19 @@ html.is-deeplink body { visibility: hidden; animation: deeplink-failsafe 0s 3s f
   cursor: pointer;
   transition: color 0.3s;
 }
+.pf-nav__prev {
+  padding: 0 20px 0 26px;
+  border-radius: 999px 0 0 999px;
+  color: var(--c-text-sub);
+}
+.pf-nav__prev:disabled { opacity: 0.35; cursor: default; }
+.pf-nav__prev:not(:disabled):hover,
 .pf-nav__next:hover { color: var(--c-point); }
+.pf-nav__prev:focus-visible,
 .pf-nav__next:focus-visible { outline: none; color: var(--c-point); }
+.pf-nav__prev svg,
 .pf-nav__next svg { width: 14px; height: 14px; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.pf-nav__prev:not(:disabled):hover svg { transform: translateY(-2px); }
 .pf-nav__next:hover svg { transform: translateY(2px); }
 
 /* 마지막 단계 — 시작하기: 포인트 컬러가 은은하게 숨 쉰다 */

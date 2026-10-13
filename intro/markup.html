@@ -86,8 +86,13 @@
     </section>
   </main>
 
-  <!-- 진행 버튼 (추가): 직접 스크롤 대신 NEXT 로 한 단계씩 — 마지막 단계에서 시작하기로 바뀐다 -->
+  <!-- 진행 버튼 (추가): 직접 스크롤 대신 PREV · NEXT 로 한 단계씩 — 마지막 단계에서 NEXT 가 시작하기로 바뀐다 -->
   <nav class="pf-nav" aria-label="진행">
+    <button class="pf-nav__prev" type="button" disabled>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13.5v-11M3.5 7 8 2.5 12.5 7"/></svg>
+      <span>PREV</span>
+    </button>
+    <span class="pf-nav__sep" aria-hidden="true"></span>
     <span class="pf-nav__count"><b class="pf-nav__now">01</b> / <span class="pf-nav__total">08</span></span>
     <span class="pf-nav__sep" aria-hidden="true"></span>
     <button class="pf-nav__next" type="button">
