@@ -1,4 +1,4 @@
-<!-- 포트폴리오(tiifosia/portfolio) index.html 의 Top ~ About 을 옮겼다. 상단 헤더(와 헤더 전용 유리 필터 svg)는 전시 화면에서 빼고, 끝에 시작하기 버튼을 더했다. -->
+<!-- 포트폴리오(tiifosia/portfolio) index.html 의 Top ~ About 을 옮겼다. 상단 헤더(와 헤더 전용 유리 필터 svg)는 전시 화면에서 빼고, 하단 진행 버튼(NEXT / 시작하기)을 더했다. -->
   <main id="top">
 
     <!-- Hero -->
@@ -80,10 +80,18 @@
           <li data-reveal>정희성 Jeong Heesung</li>
           <li data-reveal>홍준서 Hong Junseo</li>
         </ul>
-        <!-- 시작하기: 누르면 오프닝이 걷히며 전시 지도가 펼쳐진다 (추가) -->
-        <div class="pf-start-wrap">
-          <button class="pf-start" type="button" data-reveal>시작하기</button>
-        </div>
+        <!-- 마지막 단계에서 Members 를 화면 가운데에 세우기 위한 여백 (추가) -->
+        <div class="pf-tail" aria-hidden="true"></div>
       </div>
     </section>
   </main>
+
+  <!-- 진행 버튼 (추가): 직접 스크롤 대신 NEXT 로 한 단계씩 — 마지막 단계에서 시작하기로 바뀐다 -->
+  <nav class="pf-nav" aria-label="진행">
+    <span class="pf-nav__count"><b class="pf-nav__now">01</b> / <span class="pf-nav__total">08</span></span>
+    <span class="pf-nav__sep" aria-hidden="true"></span>
+    <button class="pf-nav__next" type="button">
+      <span class="pf-nav__label">NEXT</span>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5v11M3.5 9 8 13.5 12.5 9"/></svg>
+    </button>
+  </nav>
