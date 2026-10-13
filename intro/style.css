@@ -1305,10 +1305,10 @@ html.is-deeplink body { visibility: hidden; animation: deeplink-failsafe 0s 3s f
   to { opacity: 1; transform: none; }
 }
 
-/* About 2단 — 아래 스토리 칸(4:7)과 같은 비율 · 간격으로 맞춘다 */
+/* About 2단 — 왼쪽 라벨 · 제목, 오른쪽 문단. 제목이 짧아 간격이 멀어 보이지 않게 문단 칸을 조금 왼쪽에서 시작한다(3:8) */
 .about__head {
   display: grid;
-  grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+  grid-template-columns: minmax(0, 3fr) minmax(0, 8fr);
   gap: clamp(32px, 4vw, 72px);
   align-items: end;
 }
