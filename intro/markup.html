@@ -1,4 +1,4 @@
-<!-- 포트폴리오(tiifosia/portfolio) index.html 의 Top ~ About 을 옮겼다. 상단 헤더(와 헤더 전용 유리 필터 svg)는 전시 화면에서 빼고, 하단 진행 버튼(NEXT / 시작하기)을 더했다. -->
+<!-- 포트폴리오(tiifosia/portfolio) index.html 의 Top ~ About 을 옮겼다. 상단 헤더(와 헤더 전용 유리 필터 svg)는 전시 화면에서 빼고, 하단 진행 버튼(PREV / NEXT / 시작하기), 첫 화면 캡션, About 2단 · Members 크레딧 배치, 필름 그레인을 더했다. -->
   <main id="top">
 
     <!-- Hero -->
@@ -16,6 +16,9 @@
 
       <!-- 스크롤하면 제목과 서명이 물러나고 이 문장이 스크롤한 만큼 한 글자씩 쓰인다.
            연출을 못 쓰는 환경(GSAP 미로드 · 모션 최소화)에서는 제목 아래에 그냥 놓인다. -->
+      <!-- 첫 화면 캡션 (추가): 왼쪽 아래 — 오른쪽 아래 서명과 대각선으로 균형 -->
+      <p class="hero__caption">Interactive Exhibition<br>Team1 — 2026</p>
+
       <div class="hero__ask" hidden>
         <p class="hero__question">우리는 무엇을 근거로 세계를 실제라고 믿는가?</p>
       </div>
@@ -24,12 +27,17 @@
     <!-- About -->
     <section class="section" id="about">
       <div class="container">
-        <span class="section__label" data-reveal>About</span>
-        <h2 class="section__title about__title" data-reveal>Project</h2>
-        <p class="about__desc about__lead" data-reveal>
-          <span class="accent about__name">Generated World</span>는 세계 곳곳의 장소를 촬영한 실제 영상과
-          AI가 생성한 영상을 한데 섞어, 관람객이 이미지의 진위를 판단하도록 하는 인터랙티브 작품입니다.
-        </p>
+        <!-- 2단 (추가): 왼쪽 라벨 · 제목, 오른쪽 문단 — 아래 스토리의 4:7 칸과 맞춘다 -->
+        <div class="about__head">
+          <div>
+            <span class="section__label" data-reveal>About</span>
+            <h2 class="section__title about__title" data-reveal>Project</h2>
+          </div>
+          <p class="about__desc about__lead" data-reveal>
+            <span class="accent about__name">Generated World</span>는 세계 곳곳의 장소를 촬영한 실제 영상과
+            AI가 생성한 영상을 한데 섞어, 관람객이 이미지의 진위를 판단하도록 하는 인터랙티브 작품입니다.
+          </p>
+        </div>
 
         <!-- 작품 진행 방식 — 스크롤하면 고정된 채 네 단계로 점 세계지도가 바뀐다.
              지도는 js/world-dots.js 데이터로 js 가 그린다. 연출을 못 쓰면 문장 네 개와 완성된 지도만 보인다. -->
@@ -74,17 +82,23 @@
             </div>
           </div>
         </div>
-        <h2 class="section__title about__title about__title--next" data-reveal>Members</h2>
-        <ul class="about__members">
-          <li data-reveal>류주영 Ryu Ju Young</li>
-          <li data-reveal>정희성 Jeong Heesung</li>
-          <li data-reveal>홍준서 Hong Junseo</li>
-        </ul>
+        <!-- 엔딩 크레딧 (추가): 라벨 아래 세 명을 가로로 가운데 정렬 -->
+        <div class="credits">
+          <h2 class="section__label about__title--next" data-reveal>Members</h2>
+          <ul class="about__members">
+            <li data-reveal><span class="credits__ko">류주영</span><span class="credits__en">Ryu Ju Young</span></li>
+            <li data-reveal><span class="credits__ko">정희성</span><span class="credits__en">Jeong Heesung</span></li>
+            <li data-reveal><span class="credits__ko">홍준서</span><span class="credits__en">Hong Junseo</span></li>
+          </ul>
+        </div>
         <!-- 마지막 단계에서 Members 를 화면 가운데에 세우기 위한 여백 (추가) -->
         <div class="pf-tail" aria-hidden="true"></div>
       </div>
     </section>
   </main>
+
+  <!-- 필름 그레인 (추가): 화면 전체에 아주 옅은 노이즈 질감 -->
+  <div class="pf-grain" aria-hidden="true"></div>
 
   <!-- 진행 버튼 (추가): 직접 스크롤 대신 PREV · NEXT 로 한 단계씩 — 마지막 단계에서 NEXT 가 시작하기로 바뀐다 -->
   <nav class="pf-nav" aria-label="진행">
