@@ -1276,6 +1276,15 @@ html.is-deeplink body { visibility: hidden; animation: deeplink-failsafe 0s 3s f
    ========================================================================== */
 #top { background-color: var(--c-bg); }
 
+/* 헤더를 뺀 전시판의 세로 균형 — 헤더 자리만큼 위를 비워 두던 여백을 없애고,
+   대신 하단 진행 캡슐 자리만큼 아래를 비워 내용이 캡슐 위 공간의 가운데에 오게 한다 */
+:root { --header-h: 0px; --header-top: 0px; --nav-room: 104px; }
+.hero { padding-block: 40px calc(40px + 2 * var(--hero-lift) + var(--nav-room)); }
+/* 서명도 제목이 올라간 만큼(캡슐 자리의 절반) 함께 올려 제목과의 간격을 유지한다 */
+.signature { bottom: calc(clamp(24px, 7vh, 88px) + var(--hero-lift) + var(--nav-room) / 2); }
+.hero__ask { padding: 0 var(--gutter) var(--nav-room); }
+.story__inner { padding-top: 0; padding-bottom: var(--nav-room); }
+
 .pf-tail { height: 40vh; height: 40svh; }
 
 /* 진행 버튼 — 화면 아래 가운데 캡슐: ↑ PREV | 01 / 08 | NEXT ↓ → 마지막엔 NEXT 자리가 시작하기 → */
