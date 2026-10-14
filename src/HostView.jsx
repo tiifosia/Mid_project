@@ -10,7 +10,17 @@ const WORLD = [[-56, -168], [78, 190]] // 남극을 뺀 세계 전체
 const BLEED = 64
 const FIT = { padding: [BLEED, BLEED] }
 const FLY_SECONDS = 0.6
+const RESET_SECONDS = 1.0 // Reset Zoom · MAP으로 이동: 세계 전체로 부드럽게 물러난다
 const REVEAL_SECONDS = 1.4 // 오프닝 뒤 세계 전체로 물러나며 선명해지는 시간
+
+// 이 기기에서 이미 투표한 선택 ('real' | 'ai' | null)
+const votedChoice = (id) => {
+  try {
+    return localStorage.getItem(`voted_${id}`)
+  } catch {
+    return null
+  }
+}
 
 export default function HostView() {
   const mapEl = useRef(null)
@@ -41,30 +51,25 @@ export default function HostView() {
     setTimeout(() => setShowModal(true), FLY_SECONDS * 800)
   }
 
+  // 팝업을 닫고 세계 전체(처음 크기)로 돌아간다
   const close = () => {
     setShowModal(false)
     setSelected(null)
     mapRef.current.flyToBounds(WORLD, { ...FIT, duration: FLY_SECONDS, easeLinearity: 0.2 })
   }
 
-  // 호스트 판정: 투표 마감 + 판정 저장, 팝업은 바로 닫는다
-  const decide = async (id, choice) => {
-    close()
-    const { error } = await supabase.rpc('decide', { video_id: id, choice })
-    if (error) return alert(`판정 저장에 실패했습니다.\n(${error.message})`)
-    setRows((rs) => ({ ...rs, [id]: { ...rs[id], verdict: choice, status: 'closed' } }))
-  }
+  // Reset Zoom: 확대 · 이동한 지도를 처음 크기로 자연스럽게 되돌린다
+  const resetZoom = () => mapRef.current.flyToBounds(WORLD, { ...FIT, duration: RESET_SECONDS, easeLinearity: 0.2 })
 
-  // 전체 리셋: 투표 수 · 마감 · 판정을 처음으로 (정답 is_ai 는 그대로)
-  const resetAll = async () => {
-    if (!confirm('모든 투표 결과와 판정을 초기화할까요?')) return
-    const { error } = await supabase.rpc('reset_votes')
-    if (error) return alert(`초기화에 실패했습니다.\n(${error.message})`)
-    setRows((rs) =>
-      Object.fromEntries(
-        Object.entries(rs).map(([id, r]) => [id, { ...r, real_votes: 0, ai_votes: 0, status: 'voting', verdict: null }]),
-      ),
-    )
+  // 접속자 각자의 투표 — 이 기기에서 영상당 1표. 숫자는 실시간 구독으로 모두에게 반영된다
+  const vote = async (id, choice) => {
+    if (votedChoice(id)) return
+    const { error } = await supabase.rpc('vote', { video_id: id, choice })
+    if (error) return alert(`투표에 실패했습니다. 다시 시도해 주세요.\n(${error.message})`)
+    try {
+      localStorage.setItem(`voted_${id}`, choice)
+    } catch {}
+    setRows((rs) => ({ ...rs, [id]: { ...rs[id], [`${choice}_votes`]: (rs[id]?.[`${choice}_votes`] ?? 0) + 1 } }))
   }
 
   useEffect(() => {
@@ -123,11 +128,13 @@ export default function HostView() {
     return () => supabase.removeChannel(channel)
   }, [])
 
-  // 판정에 따라 마커 색: 미판정 #8d8d8d, REAL #F5F5F5, AI #C3BDFF
+  // 실시간 다수결로 마커 색: 표가 없거나 동률 #8d8d8d, REAL #F5F5F5, AI #C3BDFF
   useEffect(() => {
     VIDEOS.forEach(({ id }) => {
       const el = markerEls.current[id]
-      if (el) el.dataset.verdict = rows[id]?.verdict ?? ''
+      const real = rows[id]?.real_votes ?? 0
+      const ai = rows[id]?.ai_votes ?? 0
+      if (el) el.dataset.verdict = real > ai ? 'real' : ai > real ? 'ai' : ''
     })
   }, [rows])
 
@@ -159,19 +166,19 @@ export default function HostView() {
           />
         </div>
 
-        {/* 상단 조작부: 하나의 캡슐 안에 RESET | NO. 입력 */}
+        {/* 상단 조작부: 하나의 캡슐 안에 Reset Zoom | NO. 입력 */}
         <div
           className={`hud absolute left-1/2 top-6 z-[1000] flex h-10 -translate-x-1/2 items-center rounded-full text-[11px] tracking-[0.28em] transition-opacity duration-500 ${selected || !revealed || revealing ? 'pointer-events-none opacity-0' : ''}`}
         >
           <button
             type="button"
-            onClick={resetAll}
-            className="h-full rounded-l-full pl-6 pr-5 text-text-secondary outline-none transition-colors hover:text-text-primary focus-visible:text-accent"
+            onClick={resetZoom}
+            className="h-full whitespace-nowrap rounded-l-full pl-5 pr-4 uppercase sm:pl-6 sm:pr-5 text-text-secondary outline-none transition-colors hover:text-text-primary focus-visible:text-accent"
           >
-            RESET
+            Reset Zoom
           </button>
           <span className="h-4 w-px bg-text-primary/10" />
-          <form onSubmit={submitNumber} className="flex h-full items-center gap-3 pl-5 pr-6">
+          <form onSubmit={submitNumber} className="flex h-full items-center gap-3 pl-4 pr-5 sm:pl-5 sm:pr-6">
             <label htmlFor="video-no" className="text-text-secondary">
               NO.
             </label>
@@ -181,7 +188,9 @@ export default function HostView() {
               onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))}
               inputMode="numeric"
               autoComplete="off"
-              className="w-10 bg-transparent text-center text-[13px] tracking-[0.1em] text-text-primary caret-accent outline-none"
+              placeholder="Search video by number"
+              // 안내 문구는 흐리게 깔려 있다가 입력하려고 누르면 사라진다
+              className="w-36 text-ellipsis bg-transparent sm:w-48 text-[13px] tracking-[0.1em] text-text-primary caret-accent outline-none placeholder:text-[11px] placeholder:tracking-normal sm:placeholder:tracking-[0.12em] placeholder:text-text-secondary/45 placeholder:transition-opacity focus:placeholder:opacity-0"
             />
           </form>
         </div>
@@ -193,7 +202,7 @@ export default function HostView() {
           ))}
         </div>
         {showModal && selected && (
-          <VideoModal id={selected} row={rows[selected]} onClose={close} onDecide={(choice) => decide(selected, choice)} />
+          <VideoModal id={selected} row={rows[selected]} voted={votedChoice(selected)} onClose={close} onVote={(choice) => vote(selected, choice)} />
         )}
       </div>
       {intro && <div ref={introEl} className="relative z-10" />}

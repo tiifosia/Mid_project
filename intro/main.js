@@ -528,8 +528,8 @@ function hangulSteps(text) {
     var num = q('.story__num'), sweep = q('#story-sweep rect');
     var pts = qa('.story__pt'), pick = q('.story__pt.is-pick');
     var others = pts.filter(function (p) { return p !== pick; });
-    var card = q('.story__card'), chips = qa('.story__chip'), answerChip = q('.story__chip.is-answer');
-    var progressBar = q('.story__progress'), timeEl = q('.story__time'), answer = q('.story__answer');
+    var card = q('.story__card'), chips = qa('.story__chip'), pickedChip = q('.story__chip.is-picked');
+    var progressBar = q('.story__progress'), timeEl = q('.story__time');
     var legend = q('.story__legend'), ptsG = q('.story__pts');
     var mapW = parseFloat(q('.story__map svg').getAttribute('viewBox').split(' ')[2]);
     var cx = function (p) { return parseFloat(p.getAttribute('cx')); };
@@ -594,12 +594,11 @@ function hangulSteps(text) {
       } }, 1.2)
       .fromTo(barEls[1], { '--fill': '0%' }, fill(), 1);
 
-    /* 3. 투표하고 정답 확인 (2 → 3) */
+    /* 3. 투표 (2 → 3) — 두 버튼이 떠오르고 한쪽을 누른다 */
     swap(1, 2, 2);
     seq.fromTo(chips, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.1, stagger: 0.05 }, 2.05)
-      .to(answerChip, { borderColor: '#C3BDFF', color: '#C3BDFF', duration: 0.06 }, 2.4)
-      .to(answerChip, { backgroundColor: '#C3BDFF', color: '#111111', duration: 0.08 }, 2.65)
-      .fromTo(answer, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.1 }, 2.68)
+      .to(pickedChip, { borderColor: '#C3BDFF', color: '#C3BDFF', duration: 0.06 }, 2.4)
+      .to(pickedChip, { backgroundColor: '#C3BDFF', color: '#111111', duration: 0.08 }, 2.65)
       .fromTo(barEls[2], { '--fill': '0%' }, fill(), 2);
 
     /* 4. 판단이 쌓이며 지도가 바뀐다 (3 → 4) — 서쪽에서 동쪽으로 물결처럼 */
