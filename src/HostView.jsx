@@ -194,7 +194,7 @@ export default function HostView() {
       {/* 지도 화면은 고정해 두고, 오프닝이 그 위에서 스크롤된다 */}
       <div className="fixed inset-0 z-0 overflow-hidden bg-background">
         <div
-          className={`absolute transition-[filter] ${selected || !revealed ? 'pointer-events-none blur-xl' : ''} ${revealed ? 'is-revealed' : ''}`}
+          className={`absolute transition-[filter] ${selected || !revealed ? 'is-blurred pointer-events-none blur-xl' : ''} ${revealed ? 'is-revealed' : ''}`}
           style={{
             inset: -BLEED,
             transitionDuration: `${revealing ? REVEAL_SECONDS : FLY_SECONDS}s`,
