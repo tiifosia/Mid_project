@@ -62,28 +62,20 @@ export default function HostView() {
   // Reset Zoom: 확대 · 이동한 지도를 처음 크기로 자연스럽게 되돌린다
   const resetZoom = () => mapRef.current.flyToBounds(WORLD, { ...FIT, duration: RESET_SECONDS, easeLinearity: 0.2 })
 
-  // 접속자 각자의 투표 — 이 기기에서 영상당 1표. 숫자는 실시간 구독으로 모두에게 반영된다
+  // 접속자 각자의 투표 — 이 기기에서 영상당 1표, 번복 불가. 숫자는 실시간 구독으로 모두에게 반영된다.
+  // 성공하면 true (팝업이 결과 화면으로 넘어간다)
   const vote = async (id, choice) => {
-    if (votedChoice(id)) return
+    if (votedChoice(id)) return false
     const { error } = await supabase.rpc('vote', { video_id: id, choice })
-    if (error) return alert(`투표에 실패했습니다. 다시 시도해 주세요.\n(${error.message})`)
+    if (error) {
+      alert(`투표에 실패했습니다. 다시 시도해 주세요.\n(${error.message})`)
+      return false
+    }
     try {
       localStorage.setItem(`voted_${id}`, choice)
     } catch {}
     setRows((rs) => ({ ...rs, [id]: { ...rs[id], [`${choice}_votes`]: (rs[id]?.[`${choice}_votes`] ?? 0) + 1 } }))
-  }
-
-  // 내 투표만 취소 — 이 기기에서 넣은 한 표를 빼고 다시 고를 수 있게 한다
-  const unvote = async (id) => {
-    const choice = votedChoice(id)
-    if (!choice) return
-    const { error } = await supabase.rpc('unvote', { video_id: id, choice })
-    if (error) return alert(`투표 취소에 실패했습니다. 다시 시도해 주세요.\n(${error.message})`)
-    try {
-      localStorage.removeItem(`voted_${id}`)
-    } catch {}
-    const key = `${choice}_votes`
-    setRows((rs) => ({ ...rs, [id]: { ...rs[id], [key]: Math.max(0, (rs[id]?.[key] ?? 0) - 1) } }))
+    return true
   }
 
   useEffect(() => {
@@ -229,7 +221,6 @@ export default function HostView() {
             voted={votedChoice(selected)}
             onClose={close}
             onVote={(choice) => vote(selected, choice)}
-            onUnvote={() => unvote(selected)}
           />
         )}
       </div>

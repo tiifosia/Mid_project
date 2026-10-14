@@ -6,17 +6,18 @@ const REFRESH_MS = 5000 // 새 댓글을 실시간과 별도로 확인하는 간
 const percent = (n, total) => (total ? Math.round((n / total) * 100) : 0)
 
 const CHOICES = [
-  ['real', 'REAL', 'text-text-primary'],
-  ['ai', 'AI GENERATED', 'text-accent'],
+  { choice: 'real', no: '01', label: 'REAL', lines: ['REAL'], sub: '실제로 촬영된 영상' },
+  { choice: 'ai', no: '02', label: 'AI GENERATED', lines: ['AI', 'GENERATED'], sub: 'AI가 만든 영상' },
 ]
+const LABEL = Object.fromEntries(CHOICES.map(({ choice, label }) => [choice, label]))
+const PICK_MS = 650 // 고른 버튼이 빛난 뒤 결과로 넘어가기까지
 
 // 투표 상자 폭 · 영상 폭 — 투표 상자의 높이를 영상 높이(폭 × 9/16)에 맞춰 위아래 선을 맞춘다.
 // 화면을 꽉 채우되 투표 상자 · 간격 · 여백(4.5rem)이 들어갈 자리는 남긴다
 const PANEL_W = 'clamp(20rem, 24vw, 26rem)'
 const VIDEO_W = `min(64vw, calc(100vw - ${PANEL_W} - 4.5rem), calc((100vh - 10rem) * 16 / 9))`
 
-
-export default function VideoModal({ id, row, voted, onClose, onVote, onUnvote }) {
+export default function VideoModal({ id, row, voted, onClose, onVote }) {
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
@@ -26,6 +27,17 @@ export default function VideoModal({ id, row, voted, onClose, onVote, onUnvote }
   const real = row?.real_votes ?? 0
   const ai = row?.ai_votes ?? 0
   const total = real + ai
+
+  // 처음 보는 영상은 REAL / AI GENERATED 두 버튼만 보이고, 고른 뒤에야 결과 · 댓글이 보인다 (번복 불가)
+  const [picking, setPicking] = useState(null)
+  const pick = async (choice) => {
+    if (picking || voted) return
+    setPicking(choice)
+    const ok = await onVote(choice)
+    if (!ok) return setPicking(null)
+    setTimeout(() => setPicking(null), PICK_MS)
+  }
+  const showResults = voted && !picking
 
   return (
     <div
@@ -62,60 +74,77 @@ export default function VideoModal({ id, row, voted, onClose, onVote, onUnvote }
 
         {/* 키가 낮은 창(노트북 브라우저 등, 높이 680px 이하)에서는 상자 안을 촘촘하게 해 댓글 자리를 남긴다 */}
         <div className="glass flex h-[60dvh] w-full shrink-0 flex-col gap-5 overflow-hidden rounded-3xl p-6 md:h-[calc(var(--vw)*9/16)] md:w-[var(--pw)] [@media(max-height:680px)]:gap-3 [@media(max-height:680px)]:p-5">
-          <div className="space-y-3 text-text-primary [@media(max-height:680px)]:space-y-2">
-            <Bar label="REAL" count={real} pct={percent(real, total)} />
-            <Bar label="AI GENERATED" count={ai} pct={percent(ai, total)} />
-            <p className="text-right text-sm text-text-secondary [@media(max-height:680px)]:hidden">총 {total}표</p>
-          </div>
-
-          <div className="flex gap-2">
-            {CHOICES.map(([choice, label, color]) => (
-              <button
-                key={choice}
-                type="button"
-                disabled={!!voted}
-                onClick={() => onVote(choice)}
-                className={`glass h-12 flex-1 whitespace-nowrap rounded-full text-xs font-semibold xl:text-[13px] [@media(max-height:680px)]:h-11 tracking-wider transition-opacity ${color} ${
-                  voted === choice ? 'ring-1 ring-current' : voted ? 'opacity-35' : ''
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-            {/* 내 투표만 취소 — 투표하기 전에는 흐리게 잠겨 있다 */}
-            <button
-              type="button"
-              disabled={!voted}
-              onClick={onUnvote}
-              aria-label="내 투표 취소"
-              title="내 투표 취소"
-              className="glass flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl [@media(max-height:680px)]:h-11 [@media(max-height:680px)]:w-11 text-text-secondary transition-colors hover:text-text-primary disabled:opacity-30 disabled:hover:text-text-secondary"
-            >
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 14 4 9l5-5" />
-                <path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
-              </svg>
-            </button>
-          </div>
-
-          <Comments videoId={id} />
+          {showResults ? (
+            <>
+              <p className="fade-up text-xs tracking-[0.28em] text-text-secondary">
+                MY VOTE · <span className={voted === 'ai' ? 'text-accent' : 'text-text-primary'}>{LABEL[voted]}</span>
+              </p>
+              <div className="fade-up space-y-3 text-text-primary [@media(max-height:680px)]:space-y-2" style={{ animationDelay: '80ms' }}>
+                <Bar label="REAL" mine={voted === 'real'} count={real} pct={percent(real, total)} />
+                <Bar label="AI GENERATED" mine={voted === 'ai'} count={ai} pct={percent(ai, total)} />
+                <p className="text-right text-sm text-text-secondary [@media(max-height:680px)]:hidden">총 {total}표</p>
+              </div>
+              <div className="fade-up flex min-h-0 flex-1 flex-col" style={{ animationDelay: '200ms' }}>
+                <Comments videoId={id} />
+              </div>
+            </>
+          ) : (
+            // 투표 전: 상자 전체를 위아래 두 카드 버튼이 채운다. 고르면 그 카드가 빛나고 나머지는 흐려진 뒤 결과가 떠오른다
+            <div className="-m-2 flex flex-1 flex-col gap-2.5 [@media(max-height:680px)]:-m-1.5">
+              {CHOICES.map(({ choice, no, label, lines, sub }) => (
+                <button
+                  key={choice}
+                  type="button"
+                  aria-label={label}
+                  disabled={!!picking}
+                  onClick={() => pick(choice)}
+                  className={`choice choice--${choice} ${picking === choice ? 'is-picked' : picking ? 'is-dimmed' : ''}`}
+                >
+                  <span className="choice__top">
+                    <span className="choice__no">{no}</span>
+                    <span className="choice__arrow">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 12h14M13 6l6 6-6 6" />
+                      </svg>
+                    </span>
+                  </span>
+                  <span>
+                    <span className="choice__label">
+                      {lines.map((l) => (
+                        <span key={l} className="block">
+                          {l}
+                        </span>
+                      ))}
+                    </span>
+                    <span className="choice__sub">{sub}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
   )
 }
 
-function Bar({ label, count, pct }) {
+function Bar({ label, mine, count, pct }) {
+  // 결과가 처음 보일 때 0에서 차오른다
+  const [grown, setGrown] = useState(false)
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setGrown(true))
+    return () => cancelAnimationFrame(raf)
+  }, [])
   return (
     <div>
       <div className="mb-1.5 flex justify-between text-[15px]">
-        <span>{label}</span>
+        <span className={mine ? 'font-semibold' : 'text-text-primary/70'}>{label}</span>
         <span>
           {count}표 · {pct}%
         </span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-text-secondary/30">
-        <div className="h-full rounded-full bg-accent transition-all duration-500" style={{ width: `${pct}%` }} />
+        <div className="h-full rounded-full bg-accent transition-all duration-700" style={{ width: `${grown ? pct : 0}%` }} />
       </div>
     </div>
   )
