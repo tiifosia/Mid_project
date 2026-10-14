@@ -267,10 +267,15 @@ export default function HostView() {
   )
 }
 
-// 정답률 카드 — 퍼센트와 게이지. 보일 때 0%에서 차오르고, 값이 바뀌면 그 값까지 숫자 · 게이지가 굴러간다
+// 정답률 카드 — 퍼센트와 게이지. 지도가 처음 보일 때 0%에서 차오르고, 그 뒤로는 값이 바뀌면 그 값까지 굴러간다.
+// 팝업이 열려 숨겨질 때는 값을 그대로 둔다(0으로 되돌리면 사라지는 동안 0%가 비쳐 보였다)
 function Rate({ label, correct = 0, total = 0, bar, active }) {
   const pct = total ? Math.round((correct / total) * 100) : 0
-  const shown = useCountUp(active ? pct : 0, active ? 900 : 0)
+  const [started, setStarted] = useState(false)
+  useEffect(() => {
+    if (active) setStarted(true)
+  }, [active])
+  const shown = useCountUp(started ? pct : 0)
   return (
     <div className="hud w-40 rounded-2xl px-5 pb-4 pt-3.5 sm:w-48">
       <div className="flex items-baseline justify-between gap-3">
@@ -292,7 +297,7 @@ function useCountUp(target, ms = 900) {
     const begin = from.current
     let raf
     const tick = (now) => {
-      const t = ms ? Math.min(1, (now - start) / ms) : 1
+      const t = Math.min(1, (now - start) / ms)
       const v = Math.round(begin + (target - begin) * (1 - (1 - t) ** 3))
       from.current = v
       setValue(v)
