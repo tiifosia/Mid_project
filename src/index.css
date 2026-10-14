@@ -150,6 +150,9 @@ body { @apply bg-background text-text-primary; }
   animation: marker-ring 2.8s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
 }
 .marker-ring + .marker-ring { animation-delay: 1.4s; }
+/* 지도가 흐려져 있는 동안(오프닝 · 영상 팝업) 파동을 멈춘다 — 흐림(blur) 아래에서 움직이는 것이 있으면
+   흐림 전체를 매 프레임 다시 계산해, 마커가 100개일 때 오프닝 스크롤과 팝업이 버벅인다 */
+.is-blurred .marker-ring { animation-play-state: paused; }
 /* 판정이 끝난 지점은 파동을 멈춘다 */
 @keyframes marker-ring {
   from { transform: scale(1); opacity: 0.9; }
