@@ -23,6 +23,20 @@ const votedChoice = (id) => {
   }
 }
 
+// 방금 투표한 시각 — 투표 직전에 보낸 조회가 늦게 도착해 0표로 보여도 내 기록을 지우지 않게
+const justVoted = {}
+const FRESH_MS = 20000
+
+// 서버에서 표가 0인 영상은 리셋된 것이다(내 표가 들어가 있다면 0일 수 없다).
+// 그 영상의 이 기기 투표 기록을 지워 다시 투표할 수 있게 한다
+const forgetResetVotes = (data) =>
+  data.forEach((r) => {
+    if (r.real_votes + r.ai_votes > 0 || Date.now() - (justVoted[r.id] ?? 0) < FRESH_MS) return
+    try {
+      localStorage.removeItem(`voted_${r.id}`)
+    } catch {}
+  })
+
 export default function HostView() {
   const mapEl = useRef(null)
   const mapRef = useRef(null)
@@ -71,6 +85,7 @@ export default function HostView() {
       alert(`투표에 실패했습니다. 다시 시도해 주세요.\n(${error.message})`)
       return false
     }
+    justVoted[id] = Date.now()
     try {
       localStorage.setItem(`voted_${id}`, choice)
     } catch {}
@@ -127,7 +142,11 @@ export default function HostView() {
       supabase
         .from('videos')
         .select('*')
-        .then(({ data }) => data && setRows(Object.fromEntries(data.map((r) => [r.id, r]))))
+        .then(({ data }) => {
+          if (!data) return
+          forgetResetVotes(data)
+          setRows(Object.fromEntries(data.map((r) => [r.id, r])))
+        })
     load()
     const timer = setInterval(() => document.visibilityState === 'visible' && load(), REFRESH_MS)
     const channel = supabase
