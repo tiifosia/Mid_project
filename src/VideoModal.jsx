@@ -235,7 +235,7 @@ function Comments({ videoId }) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           maxLength={300}
-          placeholder="익명으로 댓글 남기기"
+          placeholder="익명으로 코멘트 남기기"
           className="min-w-0 flex-1 bg-transparent text-[15px] text-text-primary caret-accent outline-none placeholder:text-text-secondary/60"
         />
         <button
