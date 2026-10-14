@@ -6,8 +6,8 @@ const REFRESH_MS = 5000 // 새 댓글을 실시간과 별도로 확인하는 간
 const percent = (n, total) => (total ? Math.round((n / total) * 100) : 0)
 
 const CHOICES = [
-  { choice: 'real', no: '01', label: 'REAL', lines: ['REAL'], sub: '실제로 촬영된 영상' },
-  { choice: 'ai', no: '02', label: 'AI GENERATED', lines: ['AI', 'GENERATED'], sub: 'AI가 만든 영상' },
+  { choice: 'real', label: 'REAL', lines: ['REAL'], sub: '실제로 촬영된 영상' },
+  { choice: 'ai', label: 'AI GENERATED', lines: ['AI', 'GENERATED'], sub: 'AI가 만든 영상' },
 ]
 const LABEL = Object.fromEntries(CHOICES.map(({ choice, label }) => [choice, label]))
 const PICK_MS = 650 // 고른 버튼이 빛난 뒤 결과로 넘어가기까지
@@ -91,7 +91,7 @@ export default function VideoModal({ id, row, voted, onClose, onVote }) {
           ) : (
             // 투표 전: 상자 전체를 위아래 두 카드 버튼이 채운다. 고르면 그 카드가 빛나고 나머지는 흐려진 뒤 결과가 떠오른다
             <div className="-m-2 flex flex-1 flex-col gap-2.5 [@media(max-height:680px)]:-m-1.5">
-              {CHOICES.map(({ choice, no, label, lines, sub }) => (
+              {CHOICES.map(({ choice, label, lines, sub }) => (
                 <button
                   key={choice}
                   type="button"
@@ -100,14 +100,6 @@ export default function VideoModal({ id, row, voted, onClose, onVote }) {
                   onClick={() => pick(choice)}
                   className={`choice choice--${choice} ${picking === choice ? 'is-picked' : picking ? 'is-dimmed' : ''}`}
                 >
-                  <span className="choice__top">
-                    <span className="choice__no">{no}</span>
-                    <span className="choice__arrow">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M5 12h14M13 6l6 6-6 6" />
-                      </svg>
-                    </span>
-                  </span>
                   <span>
                     <span className="choice__label">
                       {lines.map((l) => (
