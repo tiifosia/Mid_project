@@ -20,8 +20,9 @@ body { @apply bg-background text-text-primary; }
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 30px rgba(0, 0, 0, 0.35);
 }
-/* 오프닝(포트폴리오) CSS 의 전역 :focus-visible 테두리를 조작부에서는 끈다 — 포커스는 글자색 · 커서색으로 드러낸다 */
+/* 오프닝(포트폴리오) CSS 의 전역 :focus-visible 테두리를 조작부 · 댓글 입력칸에서는 끈다 — 포커스는 글자색 · 커서색으로 드러낸다 */
 .hud :focus-visible { outline: none; }
+.modal-in input:focus-visible { outline: none; }
 
 /* 게스트 터치 파문 */
 .ripple {
@@ -79,8 +80,6 @@ body { @apply bg-background text-text-primary; }
 }
 .marker-ring + .marker-ring { animation-delay: 1.4s; }
 /* 판정이 끝난 지점은 파동을 멈춘다 */
-.marker[data-verdict='real'] .marker-ring,
-.marker[data-verdict='ai'] .marker-ring { display: none; }
 @keyframes marker-ring {
   from { transform: scale(1); opacity: 0.9; }
   to { transform: scale(5); opacity: 0; }

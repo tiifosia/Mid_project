@@ -759,7 +759,7 @@ a:hover { color: var(--c-point); }
   100% { opacity: 0;   transform: scale(5); }
 }
 
-/* ── 영상 카드 (추상 프레임 → 투표 → 정답) ─────────── */
+/* ── 영상 카드 (추상 프레임 → 투표) ─────────── */
 .story__card {
   position: absolute;
   /* 선택된 장소(--px, --py) 오른쪽 아래에 붙는다 */
@@ -846,16 +846,10 @@ a:hover { color: var(--c-point); }
   border: 1px solid var(--c-bg-sub);
   border-radius: 999px;
   color: var(--c-text-sub);
-  font-size: 12px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
   text-align: center;
-  opacity: 0;
-}
-
-.story__answer {
-  margin-top: 10px;
-  color: var(--c-point);
-  font-size: 12px;
-  letter-spacing: 0.02em;
+  white-space: nowrap;
   opacity: 0;
 }
 
