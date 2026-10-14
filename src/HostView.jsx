@@ -10,7 +10,8 @@ const WORLD = [[-56, -168], [78, 190]] // 남극을 뺀 세계 전체
 const BLEED = 64
 const FIT = { padding: [BLEED, BLEED] }
 const FLY_SECONDS = 0.6
-const RESET_SECONDS = 1.0 // Reset Zoom · MAP으로 이동: 세계 전체로 부드럽게 물러난다
+const RESET_SECONDS = 1.0
+const REFRESH_MS = 5000 // 투표 수를 실시간과 별도로 다시 불러오는 간격 // Reset Zoom · MAP으로 이동: 세계 전체로 부드럽게 물러난다
 const REVEAL_SECONDS = 1.4 // 오프닝 뒤 세계 전체로 물러나며 선명해지는 시간
 
 // 이 기기에서 이미 투표한 선택 ('real' | 'ai' | null)
@@ -126,19 +127,27 @@ export default function HostView() {
     )
   }, [])
 
-  // 전체 영상 상태 로드 + 실시간 구독 (투표 수, 판정)
+  // 전체 영상 상태 로드 + 실시간 구독 (투표 수)
+  // 여럿이 한꺼번에 투표하면 실시간 알림이 무료 한도에 걸려 늦거나 빠질 수 있어,
+  // 화면을 보고 있는 동안 몇 초마다 다시 불러와 숫자를 맞춘다
   useEffect(() => {
-    supabase
-      .from('videos')
-      .select('*')
-      .then(({ data }) => data && setRows(Object.fromEntries(data.map((r) => [r.id, r]))))
+    const load = () =>
+      supabase
+        .from('videos')
+        .select('*')
+        .then(({ data }) => data && setRows(Object.fromEntries(data.map((r) => [r.id, r]))))
+    load()
+    const timer = setInterval(() => document.visibilityState === 'visible' && load(), REFRESH_MS)
     const channel = supabase
       .channel('videos')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'videos' }, ({ new: row }) =>
         setRows((rs) => ({ ...rs, [row.id]: row })),
       )
       .subscribe()
-    return () => supabase.removeChannel(channel)
+    return () => {
+      clearInterval(timer)
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   // 실시간 다수결로 마커 색: 표가 없거나 동률 #8d8d8d, REAL #F5F5F5, AI #C3BDFF
@@ -208,12 +217,11 @@ export default function HostView() {
           </form>
         </div>
 
-        {/* 모달을 열기 전에 영상을 미리 받아 두어 즉시 재생되게 한다 */}
-        <div hidden>
-          {VIDEOS.map(({ id }) => (
-            <video key={id} src={`${import.meta.env.BASE_URL}videos/${id}.mp4`} preload="auto" muted />
-          ))}
-        </div>
+        {/* 고른 영상만 줌인하는 동안 미리 받기 시작해 팝업이 열리면 바로 재생되게 한다
+            (영상이 100개라 전부 미리 받으면 접속자마다 수백 MB 를 받게 된다) */}
+        {selected && (
+          <video key={selected} hidden src={`${import.meta.env.BASE_URL}videos/${selected}.mp4`} preload="auto" muted />
+        )}
         {showModal && selected && (
           <VideoModal
             id={selected}
