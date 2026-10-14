@@ -222,7 +222,7 @@ function Comments({ videoId }) {
         COMMENTS <span className="text-text-primary">{comments.length}</span>
       </p>
       <ul ref={listEl} className="comments min-h-0 flex-1 space-y-2.5 overflow-y-auto overscroll-contain pr-2 text-[15px]">
-        {comments.length === 0 && <li className="text-xs text-text-secondary">첫 댓글을 남겨 보세요.</li>}
+        {comments.length === 0 && <li className="text-xs text-text-secondary">첫 코멘트를 남겨 보세요.</li>}
         {comments.map((c) => (
           <li key={c.id} className="break-words leading-snug text-text-primary">
             {c.body}
@@ -241,9 +241,13 @@ function Comments({ videoId }) {
         <button
           type="submit"
           disabled={!text.trim() || sending}
-          className="rounded-full px-4 py-2 text-xs tracking-[0.2em] text-accent transition-opacity disabled:opacity-30"
+          aria-label="등록"
+          title="등록"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent text-background transition-opacity disabled:opacity-25"
         >
-          등록
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 19V5M6 11l6-6 6 6" />
+          </svg>
         </button>
       </form>
     </div>
