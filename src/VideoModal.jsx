@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from './supabase.js'
 
+const REFRESH_MS = 8000 // 댓글을 실시간과 별도로 다시 불러오는 간격
+
 const percent = (n, total) => (total ? Math.round((n / total) * 100) : 0)
 
 const CHOICES = [
@@ -130,13 +132,17 @@ function Comments({ videoId }) {
 
   useEffect(() => {
     setComments([])
-    supabase
-      .from('comments')
-      .select('*')
-      .eq('video_id', videoId)
-      .order('created_at')
-      .limit(200)
-      .then(({ data }) => data && setComments(data))
+    const load = () =>
+      supabase
+        .from('comments')
+        .select('*')
+        .eq('video_id', videoId)
+        .order('created_at')
+        .limit(200)
+        .then(({ data }) => data && setComments(data))
+    load()
+    // 실시간 알림이 늦거나 빠져도 몇 초 안에 맞춰지도록 다시 불러온다
+    const timer = setInterval(() => document.visibilityState === 'visible' && load(), REFRESH_MS)
     const channel = supabase
       .channel(`comments:${videoId}`)
       .on(
@@ -145,7 +151,10 @@ function Comments({ videoId }) {
         ({ new: c }) => setComments((cs) => (cs.some((x) => x.id === c.id) ? cs : [...cs, c])),
       )
       .subscribe()
-    return () => supabase.removeChannel(channel)
+    return () => {
+      clearInterval(timer)
+      supabase.removeChannel(channel)
+    }
   }, [videoId])
 
   // 새 댓글이 붙으면 맨 아래로
