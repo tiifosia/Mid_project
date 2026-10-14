@@ -1345,23 +1345,16 @@ html.is-deeplink body { visibility: hidden; animation: deeplink-failsafe 0s 3s f
 
 /* 필름 그레인 — 본문 뒤에 깔린 바탕 자체를 고운 노이즈로 (평균 밝기는 배경색 #111 그대로).
    본문 위에 overlay 로 섞어 얹던 방식은 화면이 움직일 때마다 아래 화면 전체를 다시 섞어 끊겼다.
-   바탕이라 섞을 것이 없고, 초당 8번 옮겨 지글거리는 것도 그 층만 옮기면 된다. */
+   바탕이라 섞을 것이 없다. 움직이지 않는 정지 질감으로 둔다 — 초당 8번 옮겨 지글거리게 했더니
+   그때마다 화면 전체를 다시 그려 스크롤 연출이 끊겼다(측정: 프레임 간격 약 1.5배). */
 #top { background-color: transparent; }
 .pf-grain {
   position: fixed;
-  inset: -96px; /* 흔들리는 폭만큼만 크게 */
+  inset: 0;
   z-index: -1; /* 오프닝 안에서 맨 뒤 — 그 뒤의 지도는 이 바탕이 가린다 */
   pointer-events: none;
   background-color: var(--c-bg);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.075' intercept='0.034'/%3E%3CfeFuncG type='linear' slope='0.075' intercept='0.034'/%3E%3CfeFuncB type='linear' slope='0.075' intercept='0.034'/%3E%3CfeFuncA type='linear' slope='0' intercept='1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  animation: pf-grain 1s steps(8) infinite;
-}
-@keyframes pf-grain {
-  0% { transform: translate(0, 0); }
-  25% { transform: translate(-61px, 43px); }
-  50% { transform: translate(53px, -71px); }
-  75% { transform: translate(-31px, -53px); }
-  100% { transform: translate(73px, 61px); }
 }
 
 /* 진행 버튼 — 화면 아래 가운데 캡슐: ↑ PREV | 01 / 08 | NEXT ↓ → 마지막엔 NEXT 자리가 시작하기 → */
