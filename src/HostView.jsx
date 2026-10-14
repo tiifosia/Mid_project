@@ -23,6 +23,10 @@ const votedChoice = (id) => {
   }
 }
 
+// 이 기기에서 투표한 영상 전부 — 나의 정답률 계산용 [{ video_id, choice }]
+const myVotes = () =>
+  VIDEOS.map(({ id }) => ({ video_id: id, choice: votedChoice(id) })).filter((v) => v.choice)
+
 // 방금 투표한 시각 — 투표 직전에 보낸 조회가 늦게 도착해 0표로 보여도 내 기록을 지우지 않게
 const justVoted = {}
 const FRESH_MS = 20000
@@ -49,6 +53,11 @@ export default function HostView() {
   const [intro, setIntro] = useState(true)
   const [revealed, setRevealed] = useState(false)
   const [revealing, setRevealing] = useState(false)
+  // 전체 · 나의 정답률 — 정답은 서버에만 있고, 서버가 맞힌 개수만 돌려준다
+  const [accuracy, setAccuracy] = useState(null)
+  const rateActive = revealed && !revealing && !selected
+  const loadAccuracy = () =>
+    supabase.rpc('accuracy', { my_votes: myVotes() }).then(({ data }) => data && setAccuracy(data))
 
   // 오프닝이 걷히면: 가까이 당겨져 흐린 지도가 세계 전체로 물러나며 선명해지고 마커가 떠오른다
   const reveal = () => {
@@ -90,6 +99,7 @@ export default function HostView() {
       localStorage.setItem(`voted_${id}`, choice)
     } catch {}
     setRows((rs) => ({ ...rs, [id]: { ...rs[id], [`${choice}_votes`]: (rs[id]?.[`${choice}_votes`] ?? 0) + 1 } }))
+    loadAccuracy()
     return true
   }
 
@@ -146,6 +156,7 @@ export default function HostView() {
           if (!data) return
           forgetResetVotes(data)
           setRows(Object.fromEntries(data.map((r) => [r.id, r])))
+          loadAccuracy()
         })
     load()
     const timer = setInterval(() => document.visibilityState === 'visible' && load(), REFRESH_MS)
@@ -228,6 +239,14 @@ export default function HostView() {
           </form>
         </div>
 
+        {/* 하단 가운데: 전체 정답률 · 나의 정답률 — 지도가 보일 때마다 0%에서 차오른다 */}
+        <div
+          className={`absolute bottom-6 left-1/2 z-[1000] flex -translate-x-1/2 gap-3 transition-opacity duration-500 ${rateActive ? '' : 'pointer-events-none opacity-0'}`}
+        >
+          <Rate label="전체 정답률" correct={accuracy?.all_correct} total={accuracy?.all_total} bar="bg-text-primary" active={rateActive} />
+          <Rate label="나의 정답률" correct={accuracy?.my_correct} total={accuracy?.my_total} bar="bg-accent" active={rateActive} />
+        </div>
+
         {/* 고른 영상만 줌인하는 동안 미리 받기 시작해 팝업이 열리면 바로 재생되게 한다
             (영상이 100개라 전부 미리 받으면 접속자마다 수백 MB 를 받게 된다) */}
         {selected && (
@@ -246,4 +265,41 @@ export default function HostView() {
       {intro && <div ref={introEl} className="relative z-10" />}
     </>
   )
+}
+
+// 정답률 카드 — 퍼센트와 게이지. 보일 때 0%에서 차오르고, 값이 바뀌면 그 값까지 숫자 · 게이지가 굴러간다
+function Rate({ label, correct = 0, total = 0, bar, active }) {
+  const pct = total ? Math.round((correct / total) * 100) : 0
+  const shown = useCountUp(active ? pct : 0, active ? 900 : 0)
+  return (
+    <div className="hud w-40 rounded-2xl px-5 pb-4 pt-3.5 sm:w-48">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="whitespace-nowrap text-[11px] tracking-[0.12em] text-text-secondary">{label}</span>
+        <span className="text-lg font-semibold tabular-nums text-text-primary">{shown}%</span>
+      </div>
+      <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-text-primary/10">
+        <div className={`h-full rounded-full ${bar}`} style={{ width: `${shown}%` }} />
+      </div>
+    </div>
+  )
+}
+
+function useCountUp(target, ms = 900) {
+  const [value, setValue] = useState(0)
+  const from = useRef(0)
+  useEffect(() => {
+    const start = performance.now()
+    const begin = from.current
+    let raf
+    const tick = (now) => {
+      const t = ms ? Math.min(1, (now - start) / ms) : 1
+      const v = Math.round(begin + (target - begin) * (1 - (1 - t) ** 3))
+      from.current = v
+      setValue(v)
+      if (t < 1) raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [target, ms])
+  return value
 }
