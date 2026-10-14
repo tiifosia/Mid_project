@@ -47,7 +47,17 @@ returns void language sql security definer set search_path = public as $$
   where true;
 $$;
 
+-- 4-1. 투표 취소 RPC: 내 한 표를 뺀다 (0 아래로는 내려가지 않음)
+create or replace function public.unvote(video_id text, choice text)
+returns void language sql security definer set search_path = public as $$
+  update public.videos
+  set real_votes = greatest(real_votes - (choice = 'real')::int, 0),
+      ai_votes   = greatest(ai_votes   - (choice = 'ai')::int, 0)
+  where id = video_id and choice in ('real', 'ai');
+$$;
+
 grant execute on function public.vote(text, text) to anon;
+grant execute on function public.unvote(text, text) to anon;
 grant execute on function public.reset_votes() to anon;
 
 -- 6-1. 익명 댓글: 영상마다 따로. 누구나 읽기, 쓰기는 add_comment RPC 로만 (1~300자)

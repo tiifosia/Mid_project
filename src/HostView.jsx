@@ -72,6 +72,19 @@ export default function HostView() {
     setRows((rs) => ({ ...rs, [id]: { ...rs[id], [`${choice}_votes`]: (rs[id]?.[`${choice}_votes`] ?? 0) + 1 } }))
   }
 
+  // 내 투표만 취소 — 이 기기에서 넣은 한 표를 빼고 다시 고를 수 있게 한다
+  const unvote = async (id) => {
+    const choice = votedChoice(id)
+    if (!choice) return
+    const { error } = await supabase.rpc('unvote', { video_id: id, choice })
+    if (error) return alert(`투표 취소에 실패했습니다. 다시 시도해 주세요.\n(${error.message})`)
+    try {
+      localStorage.removeItem(`voted_${id}`)
+    } catch {}
+    const key = `${choice}_votes`
+    setRows((rs) => ({ ...rs, [id]: { ...rs[id], [key]: Math.max(0, (rs[id]?.[key] ?? 0) - 1) } }))
+  }
+
   useEffect(() => {
     const map = L.map(mapEl.current, {
       zoomControl: false,
@@ -202,7 +215,14 @@ export default function HostView() {
           ))}
         </div>
         {showModal && selected && (
-          <VideoModal id={selected} row={rows[selected]} voted={votedChoice(selected)} onClose={close} onVote={(choice) => vote(selected, choice)} />
+          <VideoModal
+            id={selected}
+            row={rows[selected]}
+            voted={votedChoice(selected)}
+            onClose={close}
+            onVote={(choice) => vote(selected, choice)}
+            onUnvote={() => unvote(selected)}
+          />
         )}
       </div>
       {intro && <div ref={introEl} className="relative z-10" />}

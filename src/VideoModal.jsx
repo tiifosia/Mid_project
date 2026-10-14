@@ -8,10 +8,13 @@ const CHOICES = [
   ['ai', 'AI GENERATED', 'text-accent'],
 ]
 
-// 영상 폭 — 투표 상자의 높이를 영상 높이(폭 × 9/16)에 맞춰 위아래 선을 맞춘다
-const VIDEO_W = 'min(56vw, calc((100vh - 12rem) * 16 / 9))'
+// 투표 상자 폭 · 영상 폭 — 투표 상자의 높이를 영상 높이(폭 × 9/16)에 맞춰 위아래 선을 맞춘다.
+// 화면을 꽉 채우되 투표 상자 · 간격 · 여백(4.5rem)이 들어갈 자리는 남긴다
+const PANEL_W = 'clamp(20rem, 24vw, 26rem)'
+const VIDEO_W = `min(64vw, calc(100vw - ${PANEL_W} - 4.5rem), calc((100vh - 10rem) * 16 / 9))`
 
-export default function VideoModal({ id, row, voted, onClose, onVote }) {
+
+export default function VideoModal({ id, row, voted, onClose, onVote, onUnvote }) {
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
@@ -24,14 +27,16 @@ export default function VideoModal({ id, row, voted, onClose, onVote }) {
 
   return (
     <div
-      className="modal-in absolute inset-0 z-[2000] flex flex-col items-center gap-4 overflow-y-auto p-4 md:justify-center md:gap-6 md:p-8"
-      style={{ '--vw': VIDEO_W }}
+      className="modal-in absolute inset-0 z-[2000] flex flex-col items-center gap-4 overflow-y-auto p-4 md:justify-center md:gap-5 md:p-6"
+      style={{ '--vw': VIDEO_W, '--pw': PANEL_W }}
       onClick={onClose}
+      // 오프닝의 부드러운 스크롤이 창 전체에서 휠을 가로채므로, 팝업 안의 휠은 거기까지 가지 않게 한다(댓글 목록이 직접 스크롤된다)
+      onWheel={(e) => e.stopPropagation()}
     >
       <button
         type="button"
         onClick={onClose}
-        className="hud h-10 rounded-full px-6 text-[11px] tracking-[0.28em] text-text-secondary transition-colors hover:text-text-primary"
+        className="hud h-11 rounded-full px-7 text-xs tracking-[0.28em] text-text-secondary transition-colors hover:text-text-primary"
       >
         MAP으로 이동
       </button>
@@ -53,27 +58,42 @@ export default function VideoModal({ id, row, voted, onClose, onVote }) {
           />
         </div>
 
-        <div className="glass flex h-[60dvh] w-full shrink-0 flex-col gap-4 overflow-hidden rounded-3xl p-5 md:h-[calc(var(--vw)*9/16)] md:w-80">
-          <div className="space-y-2.5 text-text-primary">
+        {/* 키가 낮은 창(노트북 브라우저 등, 높이 680px 이하)에서는 상자 안을 촘촘하게 해 댓글 자리를 남긴다 */}
+        <div className="glass flex h-[60dvh] w-full shrink-0 flex-col gap-5 overflow-hidden rounded-3xl p-6 md:h-[calc(var(--vw)*9/16)] md:w-[var(--pw)] [@media(max-height:680px)]:gap-3 [@media(max-height:680px)]:p-5">
+          <div className="space-y-3 text-text-primary [@media(max-height:680px)]:space-y-2">
             <Bar label="REAL" count={real} pct={percent(real, total)} />
             <Bar label="AI GENERATED" count={ai} pct={percent(ai, total)} />
-            <p className="text-right text-xs text-text-secondary">총 {total}표</p>
+            <p className="text-right text-sm text-text-secondary [@media(max-height:680px)]:hidden">총 {total}표</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="flex gap-2">
             {CHOICES.map(([choice, label, color]) => (
               <button
                 key={choice}
                 type="button"
                 disabled={!!voted}
                 onClick={() => onVote(choice)}
-                className={`glass rounded-full py-3 text-xs font-semibold tracking-wider transition-opacity ${color} ${
+                className={`glass h-12 flex-1 whitespace-nowrap rounded-full text-xs font-semibold xl:text-[13px] [@media(max-height:680px)]:h-11 tracking-wider transition-opacity ${color} ${
                   voted === choice ? 'ring-1 ring-current' : voted ? 'opacity-35' : ''
                 }`}
               >
                 {label}
               </button>
             ))}
+            {/* 내 투표만 취소 — 투표하기 전에는 흐리게 잠겨 있다 */}
+            <button
+              type="button"
+              disabled={!voted}
+              onClick={onUnvote}
+              aria-label="내 투표 취소"
+              title="내 투표 취소"
+              className="glass flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl [@media(max-height:680px)]:h-11 [@media(max-height:680px)]:w-11 text-text-secondary transition-colors hover:text-text-primary disabled:opacity-30 disabled:hover:text-text-secondary"
+            >
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 14 4 9l5-5" />
+                <path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
+              </svg>
+            </button>
           </div>
 
           <Comments videoId={id} />
@@ -86,7 +106,7 @@ export default function VideoModal({ id, row, voted, onClose, onVote }) {
 function Bar({ label, count, pct }) {
   return (
     <div>
-      <div className="mb-1 flex justify-between text-sm">
+      <div className="mb-1.5 flex justify-between text-[15px]">
         <span>{label}</span>
         <span>
           {count}표 · {pct}%
@@ -146,31 +166,31 @@ function Comments({ videoId }) {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col border-t border-text-primary/10 pt-4">
-      <p className="mb-2 text-[11px] tracking-[0.28em] text-text-secondary">
+    <div className="flex min-h-0 flex-1 flex-col border-t border-text-primary/10 pt-4 [@media(max-height:680px)]:pt-3">
+      <p className="mb-2.5 text-xs tracking-[0.28em] text-text-secondary [@media(max-height:680px)]:mb-1.5">
         COMMENTS <span className="text-text-primary">{comments.length}</span>
       </p>
-      <ul ref={listEl} className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 text-sm">
+      <ul ref={listEl} className="comments min-h-0 flex-1 space-y-2.5 overflow-y-auto overscroll-contain pr-2 text-[15px]">
         {comments.length === 0 && <li className="text-xs text-text-secondary">첫 댓글을 남겨 보세요.</li>}
         {comments.map((c) => (
           <li key={c.id} className="break-words leading-snug text-text-primary">
             {c.body}
-            <span className="ml-2 text-[10px] text-text-secondary">{time(c.created_at)}</span>
+            <span className="ml-2 text-[11px] text-text-secondary">{time(c.created_at)}</span>
           </li>
         ))}
       </ul>
-      <form onSubmit={submit} className="mt-3 flex items-center gap-2 rounded-full bg-text-primary/5 py-1 pl-4 pr-1">
+      <form onSubmit={submit} className="mt-3 flex h-12 items-center [@media(max-height:680px)]:mt-2 [@media(max-height:680px)]:h-11 gap-2 rounded-full bg-text-primary/5 pl-5 pr-1.5">
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
           maxLength={300}
           placeholder="익명으로 댓글 남기기"
-          className="min-w-0 flex-1 bg-transparent text-sm text-text-primary caret-accent outline-none placeholder:text-text-secondary/60"
+          className="min-w-0 flex-1 bg-transparent text-[15px] text-text-primary caret-accent outline-none placeholder:text-text-secondary/60"
         />
         <button
           type="submit"
           disabled={!text.trim() || sending}
-          className="rounded-full px-3 py-1.5 text-[11px] tracking-[0.2em] text-accent transition-opacity disabled:opacity-30"
+          className="rounded-full px-4 py-2 text-xs tracking-[0.2em] text-accent transition-opacity disabled:opacity-30"
         >
           등록
         </button>

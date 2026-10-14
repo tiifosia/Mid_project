@@ -24,6 +24,9 @@ body { @apply bg-background text-text-primary; }
 .hud :focus-visible { outline: none; }
 .modal-in input:focus-visible { outline: none; }
 
+/* 댓글 목록 스크롤바 — 얇고 어둡게 (기본 흰 막대가 유리 상자에서 튀지 않게) */
+.comments { scrollbar-width: thin; scrollbar-color: rgba(245, 245, 245, 0.18) transparent; }
+
 /* 게스트 터치 파문 */
 .ripple {
   position: absolute;
