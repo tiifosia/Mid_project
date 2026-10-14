@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from './supabase.js'
 
-const REFRESH_MS = 8000 // 댓글을 실시간과 별도로 다시 불러오는 간격
+const REFRESH_MS = 5000 // 새 댓글을 실시간과 별도로 확인하는 간격
 
 const percent = (n, total) => (total ? Math.round((n / total) * 100) : 0)
 
@@ -129,28 +129,49 @@ function Comments({ videoId }) {
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const listEl = useRef(null)
+  const addRef = useRef(() => {})
 
   useEffect(() => {
     setComments([])
-    const load = () =>
+    let lastId = 0 // 지금까지 받은 가장 최근 댓글 번호 (번호는 남긴 순서대로 커진다)
+    const add = (list) => {
+      if (!list?.length) return
+      lastId = Math.max(lastId, ...list.map((c) => c.id))
+      setComments((cs) => {
+        const seen = new Set(cs.map((c) => c.id))
+        return [...cs, ...list.filter((c) => !seen.has(c.id))].sort((a, b) => a.id - b.id)
+      })
+    }
+    // 처음 한 번만 최근 200개를 받는다
+    supabase
+      .from('comments')
+      .select('*')
+      .eq('video_id', videoId)
+      .order('id', { ascending: false })
+      .limit(200)
+      .then(({ data }) => add(data))
+    // 그 뒤로는 마지막으로 받은 댓글 이후에 새로 달린 것만 확인한다 — 새 댓글이 없으면 빈 응답이라 전송량이 거의 없다.
+    // 실시간 알림이 늦거나 빠져도 몇 초 안에 맞춰진다
+    const poll = () =>
+      document.visibilityState === 'visible' &&
       supabase
         .from('comments')
         .select('*')
         .eq('video_id', videoId)
-        .order('created_at')
+        .gt('id', lastId)
+        .order('id')
         .limit(200)
-        .then(({ data }) => data && setComments(data))
-    load()
-    // 실시간 알림이 늦거나 빠져도 몇 초 안에 맞춰지도록 다시 불러온다
-    const timer = setInterval(() => document.visibilityState === 'visible' && load(), REFRESH_MS)
+        .then(({ data }) => add(data))
+    const timer = setInterval(poll, REFRESH_MS)
     const channel = supabase
       .channel(`comments:${videoId}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'comments', filter: `video_id=eq.${videoId}` },
-        ({ new: c }) => setComments((cs) => (cs.some((x) => x.id === c.id) ? cs : [...cs, c])),
+        ({ new: c }) => add([c]),
       )
       .subscribe()
+    addRef.current = add
     return () => {
       clearInterval(timer)
       supabase.removeChannel(channel)
@@ -171,7 +192,7 @@ function Comments({ videoId }) {
     setSending(false)
     if (error) return alert(`댓글을 남기지 못했습니다.\n(${error.message})`)
     setText('')
-    if (data?.id) setComments((cs) => (cs.some((x) => x.id === data.id) ? cs : [...cs, data]))
+    if (data?.id) addRef.current([data])
   }
 
   return (
