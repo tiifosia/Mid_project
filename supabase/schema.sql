@@ -31,10 +31,11 @@ end $$;
 -- 2. 전시 영상 목록 · 정답 (true = AI 생성, false = 실제 촬영)
 --    src/videos.js 와 같은 목록. 이 목록에 없는 영상(예전 테스트 영상)은 투표 · 댓글 · 정답과 함께 지운다
 delete from public.videos where id not in (
-  'clip_01', 'clip_02', 'clip_03', 'clip_04', 'clip_05', 'clip_06', 'clip_07'
+  'clip_01', 'clip_02', 'clip_03', 'clip_04', 'clip_05', 'clip_06', 'clip_07', 'clip_08', 'clip_09'
 );
 insert into public.videos (id) values
-  ('clip_01'), ('clip_02'), ('clip_03'), ('clip_04'), ('clip_05'), ('clip_06'), ('clip_07')
+  ('clip_01'), ('clip_02'), ('clip_03'), ('clip_04'), ('clip_05'), ('clip_06'), ('clip_07'),
+  ('clip_08'), ('clip_09')
 on conflict (id) do nothing;
 insert into public.answers (video_id, is_ai) values
   ('clip_01', true),  -- 오스트리아 호수
@@ -43,7 +44,9 @@ insert into public.answers (video_id, is_ai) values
   ('clip_04', true),  -- 필리핀 산
   ('clip_05', true),  -- 몽골 아르항가이 초원
   ('clip_06', true),  -- 헝가리 시골
-  ('clip_07', true)   -- 일본 마루노우치 일대
+  ('clip_07', true),  -- 일본 마루노우치 일대
+  ('clip_08', true),  -- 핀란드 간이역
+  ('clip_09', true)   -- 스위스 산간 지역
 on conflict (video_id) do update set is_ai = excluded.is_ai;
 
 -- 3. RLS: 누구나 읽기만 가능, 직접 쓰기는 정책이 없으므로 전부 차단
