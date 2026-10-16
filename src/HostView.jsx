@@ -178,7 +178,10 @@ export default function HostView() {
       const el = markerEls.current[id]
       const real = rows[id]?.real_votes ?? 0
       const ai = rows[id]?.ai_votes ?? 0
-      if (el) el.dataset.verdict = real > ai ? 'real' : ai > real ? 'ai' : ''
+      if (!el) return
+      el.dataset.verdict = real > ai ? 'real' : ai > real ? 'ai' : ''
+      // 이 기기에서 투표를 마친 곳은 파동을 멈춘다 — 아직 안 본 곳만 퍼져 보이게
+      el.dataset.mine = votedChoice(id) ? '1' : ''
     })
   }, [rows])
 
