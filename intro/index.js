@@ -1,4 +1,4 @@
-// 포트폴리오 Top ~ About 을 그대로 띄우는 스크롤 오프닝.
+// 포트폴리오 About(작품 소개 · 진행 방식 네 단계)을 띄우는 오프닝 — 하단 NEXT 로 한 단계씩.
 // 호스트 화면에서만 동적으로 불러온다(포트폴리오 CSS 가 전역 규칙이라 게스트 화면에 섞이지 않게).
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -18,15 +18,6 @@ export async function startIntro(container, { onStart, onDone }) {
   await import('./world-dots.js')
   await import('./main.js')
 
-  // 첫 화면 캡션은 제목과 함께 물러난다 (히어로 고정 구간의 처음 0.48 화면 동안)
-  gsap.fromTo(container.querySelector('.hero__caption'), { opacity: 1, y: 0 }, {
-    opacity: 0,
-    y: -40,
-    ease: 'power1.in',
-    // 히어로는 맨 위에 고정돼 있으므로 스크롤 위치로 직접 준다(고정된 요소를 기준으로 잡으면 고정 구간만큼 뒤로 밀린다)
-    scrollTrigger: { start: 0, end: () => window.innerHeight * 0.48, scrub: true },
-  })
-
   // 직접 스크롤은 잠그고 하단 NEXT 로만 한 단계씩 진행한다
   window.pageScroll?.lock(true)
 
@@ -43,33 +34,25 @@ export async function startIntro(container, { onStart, onDone }) {
     const vh = window.innerHeight
     const max = ScrollTrigger.maxScroll(window)
     const all = ScrollTrigger.getAll()
-    const hero = all.find((t) => t.pin === container.querySelector('.hero'))
     const lead = all.find((t) => t.trigger === container.querySelector('.about__lead'))
     const story = all.find((t) => t.pin === container.querySelector('.story'))
-    const members = container.querySelector('.about__title--next')
-    const list = container.querySelector('.about__members')
-    const ys = [0]
-    // 1. 질문을 다 쓴 자리 (히어로 고정 구간 3.2 중 3.0)
-    if (hero) ys.push(hero.start + (hero.end - hero.start) * (3.0 / 3.2))
-    // 2. About 이 캡슐 위 공간의 가운데에 오는 자리 (문단 단어가 다 밝아진 뒤여야 하므로 그보다 앞서지 않게)
+    const ys = []
+    // 1. About 이 캡슐 위 공간의 가운데에 오는 자리 (문단 단어가 다 밝아진 뒤여야 하므로 그보다 앞서지 않게).
+    //    시작하면 빈 화면에서 이 자리까지 스스로 올라오며 About 이 떠오른다
     const head = container.querySelector('.about__head')
     if (head) {
       const r = head.getBoundingClientRect()
       const center = r.top + window.scrollY + r.height / 2 - (vh - NAV_ROOM) / 2
       ys.push(lead ? Math.max(center, lead.end) : center)
     }
-    // 3~6. 스토리 네 단계가 각각 끝난 자리 (고정 구간에서 화면 높이 1 = 한 단계).
-    //      1~3단계 문장은 다음 단계로 넘어가기 직전(0.88)부터 흐려지므로 그 앞(0.87)에서 멈춘다.
-    //      4단계는 고정이 끝나는 자리(1.0) — 덜 가서 멈추면 Members 로 갈 때 처음 잠깐 화면이 안 움직이다 출발해 끊겨 보인다.
+    // 2~5. 스토리 네 단계가 각각 끝난 자리 (고정 구간에서 화면 높이 1 = 한 단계).
+    //      1~3단계 문장은 다음 단계로 넘어가기 직전(0.88)부터 흐려지므로 그 앞(0.87)에서 멈춘다. 4단계는 고정이 끝나는 자리(1.0).
     if (story) for (let k = 0; k < 4; k++) ys.push(story.start + (k + (k < 3 ? 0.87 : 1)) * vh)
-    // 7. Members 가 화면 가운데보다 살짝 위(42%)에 오는 자리 — 위쪽 스토리 범례가 걸리지 않게
-    const top = members.getBoundingClientRect().top + window.scrollY
-    const bottom = list.getBoundingClientRect().bottom + window.scrollY
-    ys.push((top + bottom) / 2 - vh * 0.42)
     return ys.map((y) => Math.round(Math.min(Math.max(y, 0), max)))
   }
 
-  const step = () => stops().filter((y) => y <= window.scrollY + 4).length // 1부터
+  // 1부터 — 첫 자리로 올라오는 동안에도 01 로 보인다
+  const step = () => Math.max(1, stops().filter((y) => y <= window.scrollY + 4).length)
   const render = () => {
     const ys = stops()
     const i = step()
@@ -143,4 +126,7 @@ export async function startIntro(container, { onStart, onDone }) {
     else back()
   }
   window.addEventListener('keydown', onKey)
+
+  // 시작: 빈 화면에서 About 자리까지 스스로 올라온다
+  setTimeout(() => moveTo(stops()[0]), 400)
 }
