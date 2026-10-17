@@ -1316,6 +1316,9 @@ html.is-deeplink body { visibility: hidden; animation: deeplink-failsafe 0s 3s f
 /* 2단으로 About 이 낮아진 만큼 스토리를 떨어뜨려, About 에서 멈췄을 때 아래 스토리가 비치지 않게 */
 .about__head + .story { margin-top: 32vh; margin-top: 32svh; }
 
+/* 첫 화면(제목)을 뺐으므로 About 을 화면 아래에서 시작시킨다 — 시작하면 위로 올라오며 문단 단어가 밝아진다 */
+#about { padding-top: 80vh; padding-top: 80svh; }
+
 /* Members 엔딩 크레딧 — 가운데 정렬, 세 명을 가로로 */
 .credits {
   margin-top: clamp(56px, 8vh, 96px);
