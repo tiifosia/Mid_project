@@ -303,7 +303,8 @@ function hangulSteps(text) {
   'use strict';
 
   var items = document.querySelectorAll('[data-reveal]');
-  if (!items.length) return;
+  /* 전시판: 등장 연출 대상이 없어도 스토리(고정 · 네 단계) 연출은 해야 한다 */
+  if (!items.length && !document.querySelector('.story')) return;
 
   /* 헤더 이동(로고 · About · Works) — 스크롤로 사이 화면을 훑지 않고 그 섹션에서 바로 시작한다.
      주소에 #about 은 남기지 않는다(새로고침은 어차피 맨 위부터). */

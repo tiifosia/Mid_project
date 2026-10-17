@@ -1,4 +1,4 @@
-// 포트폴리오 About(작품 소개 · 진행 방식 네 단계)을 띄우는 오프닝 — 하단 NEXT 로 한 단계씩.
+// 메인 타이틀 + 포트폴리오 About(진행 방식 네 단계)을 띄우는 오프닝 — 하단 NEXT 로 한 단계씩.
 // 호스트 화면에서만 동적으로 불러온다(포트폴리오 CSS 가 전역 규칙이라 게스트 화면에 섞이지 않게).
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -38,25 +38,16 @@ export async function startIntro(container, { onStart, onDone }) {
     const vh = window.innerHeight
     const max = ScrollTrigger.maxScroll(window)
     const all = ScrollTrigger.getAll()
-    const lead = all.find((t) => t.trigger === container.querySelector('.about__lead'))
     const story = all.find((t) => t.pin === container.querySelector('.story'))
-    const ys = []
-    // 1. About 이 캡슐 위 공간의 가운데에 오는 자리 (문단 단어가 다 밝아진 뒤여야 하므로 그보다 앞서지 않게).
-    //    시작하면 빈 화면에서 이 자리까지 스스로 올라오며 About 이 떠오른다
-    const head = container.querySelector('.about__head')
-    if (head) {
-      const r = head.getBoundingClientRect()
-      const center = r.top + window.scrollY + r.height / 2 - (vh - NAV_ROOM) / 2
-      ys.push(lead ? Math.max(center, lead.end) : center)
-    }
+    // 1. 메인 타이틀 (맨 위)
+    const ys = [0]
     // 2~5. 스토리 네 단계가 각각 끝난 자리 (고정 구간에서 화면 높이 1 = 한 단계).
     //      1~3단계 문장은 다음 단계로 넘어가기 직전(0.88)부터 흐려지므로 그 앞(0.87)에서 멈춘다. 4단계는 고정이 끝나는 자리(1.0).
     if (story) for (let k = 0; k < 4; k++) ys.push(story.start + (k + (k < 3 ? 0.87 : 1)) * vh)
     return ys.map((y) => Math.round(Math.min(Math.max(y, 0), max)))
   }
 
-  // 1부터 — 첫 자리로 올라오는 동안에도 01 로 보인다
-  const step = () => Math.max(1, stops().filter((y) => y <= window.scrollY + 4).length)
+  const step = () => Math.max(1, stops().filter((y) => y <= window.scrollY + 4).length) // 1부터
   const render = () => {
     const ys = stops()
     const i = step()
@@ -130,12 +121,4 @@ export async function startIntro(container, { onStart, onDone }) {
     else back()
   }
   window.addEventListener('keydown', onKey)
-
-  // 시작: 빈 화면에서 About 자리까지 스스로 올라온다.
-  // 웹 폰트가 늦게 들어오면 글자 폭 · 줄 수가 바뀌어 멈출 자리와 연출 구간이 어긋나므로, 폰트를 기다리고(최대 1.5초)
-  // 위치를 다시 잰 뒤 출발한다
-  await Promise.race([document.fonts?.ready, new Promise((r) => setTimeout(r, 1500))])
-  ScrollTrigger.refresh()
-  render()
-  setTimeout(() => moveTo(stops()[0]), 300)
 }
