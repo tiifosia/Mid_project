@@ -10,6 +10,10 @@ const LEAVE_MS = 1000 // 오프닝이 흐려지며 걷히는 시간 (style.css �
 
 // onStart: 시작하기를 누른 순간(지도 펼치기 시작) / onDone: 오프닝이 다 걷힌 뒤(제거)
 export async function startIntro(container, { onStart, onDone }) {
+  // 새로고침하면 브라우저가 이전 스크롤 위치(예: 스토리 중간)로 되돌려 놓아, 첫 연출이 엉뚱한 자리에서
+  // 거꾸로 감기며 시작했다. 오프닝은 항상 맨 위에서 시작한다
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
+  window.scrollTo(0, 0)
   container.innerHTML = markup.replace('%SIGNATURE%', `${import.meta.env.BASE_URL}signature.mp4`)
 
   // 포트폴리오 스크립트는 CDN 으로 받은 전역 gsap · ScrollTrigger 를 쓴다
@@ -127,6 +131,11 @@ export async function startIntro(container, { onStart, onDone }) {
   }
   window.addEventListener('keydown', onKey)
 
-  // 시작: 빈 화면에서 About 자리까지 스스로 올라온다
-  setTimeout(() => moveTo(stops()[0]), 400)
+  // 시작: 빈 화면에서 About 자리까지 스스로 올라온다.
+  // 웹 폰트가 늦게 들어오면 글자 폭 · 줄 수가 바뀌어 멈출 자리와 연출 구간이 어긋나므로, 폰트를 기다리고(최대 1.5초)
+  // 위치를 다시 잰 뒤 출발한다
+  await Promise.race([document.fonts?.ready, new Promise((r) => setTimeout(r, 1500))])
+  ScrollTrigger.refresh()
+  render()
+  setTimeout(() => moveTo(stops()[0]), 300)
 }
