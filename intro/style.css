@@ -1316,9 +1316,63 @@ html.is-deeplink body { visibility: hidden; animation: deeplink-failsafe 0s 3s f
 /* 2단으로 About 이 낮아진 만큼 스토리를 떨어뜨려, About 에서 멈췄을 때 아래 스토리가 비치지 않게 */
 .about__head + .story { margin-top: 32vh; margin-top: 32svh; }
 
-/* 첫 화면(제목)을 뺐으므로 About 을 화면 바로 아래(보이지 않는 곳)에서 시작시킨다 — 시작하면 위로 올라오며 문단 단어가 밝아진다.
-   화면 안(80vh)에서 시작하면 첫 순간 글자가 하단 진행 캡슐 뒤에 걸쳐 보였다 */
-#about { padding-top: 100vh; padding-top: 100svh; }
+/* 메인 타이틀 — 한 화면 가운데(하단 진행 캡슐 자리는 비운다). 스크롤 연출 없이, 열리면 위에서부터 차례로 은은하게 떠오른다 */
+.gw-main {
+  height: 100vh;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px var(--nav-room);
+  text-align: center;
+}
+.gw-main > * { animation: gw-in 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+.gw-main__title { animation-delay: 0.12s; }
+.gw-main__ask { animation-delay: 0.24s; }
+.gw-main__line { animation-delay: 0.36s; }
+.gw-main__desc { animation-delay: 0.44s; }
+@keyframes gw-in { from { opacity: 0; transform: translateY(10px); } }
+
+.gw-main__pre {
+  color: var(--c-text-sub);
+  font-size: 12px;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+}
+.gw-main__pre b { color: var(--c-text); font-weight: var(--fw-medium); }
+.gw-main__pre span { margin: 0 1.1em; opacity: 0.6; }
+.gw-main__title {
+  margin-top: clamp(18px, 2.6vh, 28px);
+  font-size: clamp(44px, 7.2vw, 108px);
+  font-weight: var(--fw-heavy);
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+.gw-main__ask {
+  margin-top: clamp(14px, 2.2vh, 24px);
+  color: var(--c-text-sub);
+  font-size: clamp(16px, 1.55vw, 22px);
+  font-weight: var(--fw-light);
+}
+.gw-main__line {
+  display: block;
+  width: 1px;
+  height: clamp(32px, 5vh, 48px);
+  margin: clamp(24px, 4vh, 36px) 0 clamp(20px, 3.4vh, 30px);
+  background: linear-gradient(var(--c-point), transparent);
+}
+.gw-main__desc {
+  max-width: 40em;
+  color: var(--c-text-sub);
+  font-size: clamp(14px, 1.2vw, 17px);
+  line-height: 1.85;
+  word-break: keep-all;
+}
+@media (max-width: 768px) {
+  .gw-main__br { display: none; }
+  .gw-main__pre { font-size: 10px; letter-spacing: 0.3em; }
+}
 
 /* Members 엔딩 크레딧 — 가운데 정렬, 세 명을 가로로 */
 .credits {
@@ -1384,6 +1438,7 @@ html.is-deeplink body { visibility: hidden; animation: deeplink-failsafe 0s 3s f
 }
 .pf-nav__count {
   padding: 0 20px;
+  white-space: nowrap; /* 휴대폰에서 01 / 05 가 세 줄로 꺾이지 않게 */
   color: var(--c-text-sub);
   font-variant-numeric: tabular-nums;
 }

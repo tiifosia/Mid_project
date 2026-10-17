@@ -1,19 +1,20 @@
-<!-- 포트폴리오(tiifosia/portfolio) index.html 의 About 을 옮겼다. 첫 화면(제목 · 질문)과 Members 는 오프닝을 짧게 하려고 뺐다.
-     하단 진행 버튼(PREV / NEXT / 시작하기), About 2단 배치, 필름 그레인을 더했다. -->
+<!-- 포트폴리오(tiifosia/portfolio) index.html 의 About(진행 방식 스토리)을 옮겼다.
+     첫 화면은 전시용 타이틀(스크롤 연출 없이 바로 보인다), 하단 진행 버튼(PREV / NEXT / 시작하기), 필름 그레인을 더했다. -->
   <main id="top">
+
+    <!-- 메인 타이틀 (추가) — 팀 · 작품명 · 질문 · 소개를 화면 가운데 한 장으로 -->
+    <section class="gw-main">
+      <p class="gw-main__pre"><b>TEAM1</b><span>—</span>Interactive Exhibition 2026</p>
+      <h1 class="gw-main__title">Generated World<span class="accent">,</span></h1>
+      <p class="gw-main__ask">What remains of truth<span class="accent">?</span></p>
+      <i class="gw-main__line" aria-hidden="true"></i>
+      <p class="gw-main__desc">세계 곳곳의 장소를 촬영한 실제 영상과 AI가 생성한 영상을 한데 섞어,<br class="gw-main__br">
+        관람객이 이미지의 진위를 판단하도록 하는 인터랙티브 작품입니다.</p>
+    </section>
 
     <!-- About -->
     <section class="section" id="about">
       <div class="container">
-        <!-- 2단 (추가): 왼쪽 라벨 · 제목, 오른쪽 문단 -->
-        <div class="about__head">
-          <span class="section__label" data-reveal>About</span>
-          <h2 class="section__title about__title" data-reveal>Project</h2>
-          <p class="about__desc about__lead" data-reveal>
-            <span class="accent about__name">Generated World</span>는 세계 곳곳의 장소를 촬영한 실제 영상과
-            AI가 생성한 영상을 한데 섞어, 관람객이 이미지의 진위를 판단하도록 하는 인터랙티브 작품입니다.
-          </p>
-        </div>
 
         <!-- 작품 진행 방식 — 스크롤하면 고정된 채 네 단계로 점 세계지도가 바뀐다.
              지도는 js/world-dots.js 데이터로 js 가 그린다. 연출을 못 쓰면 문장 네 개와 완성된 지도만 보인다. -->
