@@ -41,10 +41,45 @@ const forgetResetVotes = (data) =>
     } catch {}
   })
 
+// 세계 전체 화면에서 마커 점 사이의 최소 간격(px). 같은 곳 · 아주 가까운 곳도 원이 겹치지 않게 서로 밀어 띄운다
+const MIN_GAP = 20
+// 띄우는 기준 줌의 하한 — 화면 폭 약 1280px 에서 세계 전체가 보이는 줌. 휴대폰처럼 지도가 아주 작을 때
+// 그 화면 기준으로 20px 씩 벌리면 유럽 점들이 아프리카까지 밀려나므로, 작은 화면에서는 조금 겹치는 쪽을 택한다
+const SPREAD_MIN_ZOOM = 2.2
+
+// 세계 전체가 보이는 줌에서 화면 좌표로 바꾼 뒤, 가까운 점끼리 겹친 만큼 반씩 밀어내기를 되풀이한다.
+// 완전히 같은 자리는 번호마다 다른 방향(황금각)으로 벌린다. 결과는 다시 위경도로 돌려준다
+function spreadPositions(map, zoom) {
+  const pts = VIDEOS.map(({ position }) => map.project(position, zoom))
+  for (let round = 0; round < 300; round++) {
+    let moved = false
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i + 1; j < pts.length; j++) {
+        let dx = pts[j].x - pts[i].x
+        let dy = pts[j].y - pts[i].y
+        let d = Math.hypot(dx, dy)
+        if (d >= MIN_GAP) continue
+        if (d < 0.01) {
+          dx = Math.cos(j * 2.39996)
+          dy = Math.sin(j * 2.39996)
+          d = 1
+        }
+        const push = (MIN_GAP - d) / 2 + 0.01
+        pts[i] = pts[i].subtract(L.point((dx / d) * push, (dy / d) * push))
+        pts[j] = pts[j].add(L.point((dx / d) * push, (dy / d) * push))
+        moved = true
+      }
+    }
+    if (!moved) break
+  }
+  return Object.fromEntries(VIDEOS.map(({ id }, i) => [id, map.unproject(pts[i], zoom)]))
+}
+
 export default function HostView() {
   const mapEl = useRef(null)
   const mapRef = useRef(null)
   const markerEls = useRef({})
+  const positions = useRef({}) // 겹치지 않게 띄운 마커 자리 (id → 위경도)
   const [rows, setRows] = useState({})
   const [selected, setSelected] = useState(null)
   const [showModal, setShowModal] = useState(false)
@@ -71,7 +106,7 @@ export default function HostView() {
   const open = (id) => {
     const video = VIDEOS.find((v) => v.id === id)
     setSelected(id)
-    mapRef.current.flyTo(video.position, 5, { duration: FLY_SECONDS, easeLinearity: 0.2 })
+    mapRef.current.flyTo(positions.current[video.id], 5, { duration: FLY_SECONDS, easeLinearity: 0.2 })
     setTimeout(() => setShowModal(true), FLY_SECONDS * 800)
   }
 
@@ -116,19 +151,20 @@ export default function HostView() {
     // 이동 허용 범위 = 세계 전체가 보이는 이 화면 그대로. 범위가 화면보다 좁거나 중심이 어긋나 있으면
     // 줌아웃이 끝난 뒤 Leaflet 이 지도를 범위 안으로 끌어다 놓아 옆으로 밀렸다(경도 6°, 약 24px).
     map.setMaxBounds(map.getBounds())
+    positions.current = spreadPositions(map, Math.max(map.getZoom(), SPREAD_MIN_ZOOM))
     map.setZoom(map.getZoom() + 1.5, { animate: false }) // 오프닝 동안은 가까이 당겨 둔다
 
     // 외부 타일 대신 Natural Earth 국가 경계를 직접 그린다: API 키 불필요, 오프라인 동작
     let alive = true
     addWorldLayers(map).then((layer) => !alive && layer.remove())
 
-    VIDEOS.forEach(({ id, position }, i) => {
+    VIDEOS.forEach(({ id }, i) => {
       const icon = L.divIcon({
         className: '',
-        iconSize: [40, 40],
-        html: `<div class="marker" style="--d:${(i * 137) % 800}ms"><span class="marker-ring"></span><span class="marker-ring"></span><span class="marker-core"></span><span class="marker-label">${i + 1}</span></div>`,
+        iconSize: [MIN_GAP, MIN_GAP],
+        html: `<div class="marker" style="--d:${(i * 137) % 800}ms"><span class="marker-ring"></span><span class="marker-ring"></span><span class="marker-core"></span></div>`,
       })
-      const marker = L.marker(position, { icon }).addTo(map).on('click', () => open(id))
+      const marker = L.marker(positions.current[id], { icon }).addTo(map).on('click', () => open(id))
       markerEls.current[id] = marker.getElement().querySelector('.marker')
     })
     return () => {

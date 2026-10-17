@@ -119,8 +119,8 @@ body { @apply bg-background text-text-primary; }
 .marker {
   --c: #8d8d8d; /* 미판정 */
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 20px; /* 누르는 영역 = 마커 사이 최소 간격 (HostView MIN_GAP) — 이웃 마커와 겹치지 않게 */
+  height: 20px;
   cursor: pointer;
 }
 .marker[data-verdict='real'] { --c: #F5F5F5; }
@@ -158,20 +158,8 @@ body { @apply bg-background text-text-primary; }
 /* 판정이 끝난 지점은 파동을 멈춘다 */
 @keyframes marker-ring {
   from { transform: scale(1); opacity: 0.9; }
-  to { transform: scale(5); opacity: 0; }
+  to { transform: scale(2.5); opacity: 0; } /* 이웃 마커(20px 간격)까지만 퍼진다 */
 }
-.marker-label {
-  position: absolute;
-  left: 50%;
-  top: 30px;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  color: #8d8d8d;
-  transition: color 0.3s;
-}
-.marker:hover .marker-label { color: #F5F5F5; }
 
 /* 지도가 드러나면 마커가 하나씩 떠오른다 */
 .marker { opacity: 0; }
