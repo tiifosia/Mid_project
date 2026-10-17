@@ -5,7 +5,7 @@ import { VIDEOS } from './videos.js'
 import VideoModal from './VideoModal.jsx'
 import { addWorldLayers } from './worldLayers.js'
 
-const WORLD = [[-56, -168], [78, 190]] // 남극을 뺀 세계 전체
+const WORLD = [[-67, -168], [78, 190]] // 세계 전체 (남극 대륙은 그리지 않고, 남극 영상 마커가 들어갈 만큼만 남쪽으로)
 // 지도를 화면보다 사방 BLEED 만큼 크게 깔아, 블러가 화면 가장자리에서도 바깥 내용까지 섞어 고르게 흐려지게 한다
 const BLEED = 64
 const FIT = { padding: [BLEED, BLEED] }

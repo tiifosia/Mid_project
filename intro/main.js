@@ -218,7 +218,7 @@ function hangulSteps(text) {
 /**
  * About · Project 스토리의 점 세계지도를 그린다 (데이터: js/world-dots.js)
  * 육지는 점들을 한 path 로 — 점 3천 개를 요소로 만들지 않아 가볍다.
- * 장소 100곳은 각자 circle 로 두고, 최종 판단(실제/AI/중립)을 정해 둔다.
+ * 장소 60곳은 각자 circle 로 두고, 최종 판단(실제/AI/중립)을 정해 둔다.
  */
 (function () {
   'use strict';
@@ -578,7 +578,7 @@ function hangulSteps(text) {
           { opacity: 1, y: 0, duration: 0.14, ease: 'power1.out', immediateRender: false }, at);
     };
 
-    /* 1. 장소 100곳이 서쪽부터 하나씩 켜진다 (0 → 1) */
+    /* 1. 장소 60곳이 서쪽부터 하나씩 켜진다 (0 → 1) */
     var byLon = pts.slice().sort(function (a, b) { return cx(a) - cx(b); });
     seq.fromTo(byLon, { scale: 0 }, { scale: 1, duration: 0.1, ease: 'back.out(3)', stagger: 0.006 }, 0.05)
       .fromTo(barEls[0], { '--fill': '0%' }, fill(), 0);
