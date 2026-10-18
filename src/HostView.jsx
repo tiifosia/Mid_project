@@ -233,7 +233,8 @@ export default function HostView() {
       {/* 지도 화면은 고정해 두고, 오프닝이 그 위에서 스크롤된다 */}
       <div className="fixed inset-0 z-0 overflow-hidden bg-background">
         <div
-          className={`absolute transition-[filter] ${selected || !revealed ? 'is-blurred pointer-events-none blur-xl' : ''} ${revealed ? 'is-revealed' : ''}`}
+          // 시작하기 전에는 지도를 아예 감춘다 — 오프닝 화면을 불러오는 짧은 사이에 흐린 지도가 비쳐 보였다
+          className={`absolute transition-[filter] ${selected || !revealed ? 'is-blurred pointer-events-none blur-xl' : ''} ${revealed ? 'is-revealed' : 'invisible'}`}
           style={{
             inset: -BLEED,
             transitionDuration: `${revealing ? REVEAL_SECONDS : FLY_SECONDS}s`,
